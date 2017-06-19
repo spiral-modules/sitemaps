@@ -17,11 +17,4 @@ interface SitemapInterface
      * @return int
      */
     public function getFileSize(): int;
-
-    /**
-     * Sitemap filename.
-     *
-     * @return string
-     */
-    public function getFilename(): string;
 }

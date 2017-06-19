@@ -4,40 +4,25 @@ namespace Spiral\Sitemaps\Sitemaps;
 
 use Spiral\Sitemaps\ItemInterface;
 
-class PagesSitemap extends AbstractSitemap implements ItemInterface
+class Sitemap extends AbstractSitemap implements ItemInterface
 {
     /**
      * File compression enabled?
      *
      * @var int|null
      */
-    protected $compress = false;
+    protected $compress = null;
 
     /**
      * Add sitemap item.
      *
      * @param ItemInterface $item
      *
-     * @return int
+     * @return bool
      */
-    public function addItem(ItemInterface $item): int
+    public function addItem(ItemInterface $item): bool
     {
         return $this->add($item);
-    }
-
-    /**
-     * Change filename.
-     *
-     * @param string $filename
-     *
-     * @return PagesSitemap
-     */
-    public function withFilename(string $filename): self
-    {
-        $clone = clone $this;
-        $clone->filename = $filename;
-
-        return $clone;
     }
 
     /**
@@ -107,7 +92,7 @@ class PagesSitemap extends AbstractSitemap implements ItemInterface
     protected function openHandler()
     {
         if ($this->compress) {
-            $this->handler = gzopen($this->filename, 'wb.' . $this->compress);
+            $this->handler = gzopen($this->filename, 'wb' . $this->compress);
         } else {
             $this->handler = fopen($this->filename, 'wb');
         }

@@ -2,9 +2,9 @@
 
 namespace Spiral\Sitemaps\Wrappers;
 
-class SitemapsWrapper extends AbstractWrapper
+class IndexSitemapWrapper extends AbstractWrapper
 {
-    const WRAPPER = 'sitemaps';
+    const WRAPPER = 'index';
 
     /**
      * {@inheritdoc}

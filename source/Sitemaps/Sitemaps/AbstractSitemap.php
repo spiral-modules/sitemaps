@@ -2,7 +2,6 @@
 
 namespace Spiral\Sitemaps\Sitemaps;
 
-use Spiral\Files\FileManager;
 use Spiral\Sitemaps\ItemInterface;
 use Spiral\Sitemaps\SitemapInterface;
 use Spiral\Sitemaps\WrapperInterface;
@@ -26,38 +25,89 @@ abstract class AbstractSitemap implements SitemapInterface
      */
     protected $filename = null;
 
-    /** @var WrapperInterface */
+    /**
+     * XML wrapper.
+     *
+     * @var null|WrapperInterface
+     */
     protected $wrapper;
 
-    /** @var int */
+    /**
+     * Allowed sitemap files count, if set.
+     *
+     * @var null|int
+     */
+    protected $filesCountLimit = null;
+
+    /**
+     * Allowed sitemap file limit in bytes, if set.
+     *
+     * @var null|int
+     */
+    protected $fileSizeLimit = null;
+
+    /**
+     * File size counter.
+     *
+     * @var int
+     */
     protected $fileSize = 0;
 
-    /** @var int */
+    /**
+     * Files amount counter.
+     *
+     * @var int
+     */
     protected $countItems = 0;
 
     /**
-     * AbstractSitemap constructor.
+     * @param null|WrapperInterface $wrapper
+     * @param null|int              $filesCountLimit
+     * @param null|int              $fileSizeLimit
+     */
+    public function __construct(WrapperInterface $wrapper = null, int $filesCountLimit = null, int $fileSizeLimit = null)
+    {
+        $this->wrapper = $wrapper;
+        $this->filesCountLimit = $filesCountLimit;
+        $this->fileSizeLimit = $fileSizeLimit;
+    }
+
+    /**
+     * Set new wrapper. File should not be opened by that time.
      *
      * @param WrapperInterface $wrapper
      */
-    public function __construct(WrapperInterface $wrapper)
+    public function setWrapper(WrapperInterface $wrapper)
     {
+        if ($this->isOpened()) {
+            throw new \LogicException(sprintf('Unable to set wrapper "%s" - sitemap is already opened.', get_class($wrapper)));
+        }
+
         $this->wrapper = $wrapper;
     }
 
     /**
-     * Add sitemap item.
-     *
-     * @param ItemInterface $item
-     *
-     * @return int
-     * @throws \Exception
+     * @param int $filesCountLimit
      */
-    protected function add(ItemInterface $item): int
+    public function setFilesCountLimit(int $filesCountLimit)
     {
-        $this->countItems++;
+        if ($this->isOpened()) {
+            throw new \LogicException(sprintf('Unable to set files count limit "%s" - sitemap is already opened.', $filesCountLimit));
+        }
 
-        return $this->writeData($item->render());
+        $this->filesCountLimit = $filesCountLimit;
+    }
+
+    /**
+     * @param int $fileSizeLimit
+     */
+    public function setFileSizeLimit(int $fileSizeLimit)
+    {
+        if ($this->isOpened()) {
+            throw new \LogicException(sprintf('Unable to set files count limit "%s" - sitemap is already opened.', $fileSizeLimit));
+        }
+
+        $this->fileSizeLimit = $fileSizeLimit;
     }
 
     /**
@@ -77,24 +127,6 @@ abstract class AbstractSitemap implements SitemapInterface
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function getFilename(): string
-    {
-        return $this->filename;
-    }
-
-    /**
-     * Is file handler opened.
-     *
-     * @return bool
-     */
-    protected function isOpened(): bool
-    {
-        return !empty($this->handler);
-    }
-
-    /**
      * Open file.
      *
      * @param string $filename
@@ -103,54 +135,19 @@ abstract class AbstractSitemap implements SitemapInterface
      */
     public function open(string $filename)
     {
+        if ($this->isOpened()) {
+            //already opened.
+            return;
+        }
+
+        if (empty($this->wrapper)) {
+            throw new \LogicException("Wrapper should be set first.");
+        }
+
         $this->filename = $filename;
 
         $this->openHandler();
-
-        if (!$this->isOpened()) {
-            throw new \Exception('Error during opening/creating file.');
-        }
-
         $this->writeData($this->wrapper->header());
-    }
-
-    /**
-     * Close file handler.
-     */
-    protected function openHandler()
-    {
-        $this->handler = fopen($this->filename, 'wb');
-    }
-
-    /**
-     * Write data portion.
-     *
-     * @param $data
-     *
-     * @throws \Exception
-     * @return int
-     */
-    protected function writeData($data): int
-    {
-        if (!$this->isOpened()) {
-            throw new \Exception("Unable to add data to file, file isn't opened.");
-        }
-
-        $this->fileSize += mb_strlen($data);
-
-        return $this->writeIntoHandler($data);
-    }
-
-    /**
-     * Write data into file handler.
-     *
-     * @param $data
-     *
-     * @return int
-     */
-    protected function writeIntoHandler($data): int
-    {
-        return fwrite($this->handler, $data);
     }
 
     /**
@@ -167,18 +164,109 @@ abstract class AbstractSitemap implements SitemapInterface
     }
 
     /**
-     * Close file handler.
-     */
-    protected function closeHandler()
-    {
-        fclose($this->handler);
-    }
-
-    /**
      * Destructing.
      */
     public function __destruct()
     {
         $this->close();
+    }
+
+    /**
+     * Add sitemap item.
+     *
+     * @param ItemInterface $item
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    protected function add(ItemInterface $item): bool
+    {
+        if (!empty($this->filesCountLimit) && $this->countItems >= $this->filesCountLimit) {
+            //files count limit is set and current counter has reached it.
+            return false;
+        }
+
+        if (!empty($this->fileSizeLimit) && $this->fileSize >= $this->fileSizeLimit) {
+            //file size limit is set and current counter has reached it.
+            return false;
+        }
+
+        $this->incrementFilesCounter();
+        $this->writeData($item->render());
+
+        return true;
+    }
+
+    /**
+     * Incrementing files count.
+     */
+    protected function incrementFilesCounter()
+    {
+        $this->countItems++;
+    }
+
+    /**
+     * Incrementing file size.
+     *
+     * @param $data
+     */
+    protected function incrementSizeCounter($data)
+    {
+        $this->fileSize += mb_strlen($data);
+    }
+
+    /**
+     * Is file handler opened.
+     *
+     * @return bool
+     */
+    protected function isOpened(): bool
+    {
+        return !empty($this->handler);
+    }
+
+    /**
+     * Close file handler.
+     */
+    protected function openHandler()
+    {
+        $this->handler = fopen($this->filename, 'wb');
+    }
+
+    /**
+     * Write data portion.
+     *
+     * @param $data
+     *
+     * @throws \Exception
+     */
+    protected function writeData($data)
+    {
+        if (!$this->isOpened()) {
+            throw new \Exception("Unable to add data to file, sitemap isn't opened.");
+        }
+
+        $this->incrementSizeCounter($data);
+        $this->writeIntoHandler($data);
+    }
+
+    /**
+     * Write data into file handler.
+     *
+     * @param $data
+     *
+     * @return int
+     */
+    protected function writeIntoHandler($data): int
+    {
+        return fwrite($this->handler, $data);
+    }
+
+    /**
+     * Close file handler.
+     */
+    protected function closeHandler()
+    {
+        fclose($this->handler);
     }
 }

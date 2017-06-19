@@ -11,15 +11,17 @@ class SitemapsConfig extends InjectableConfig
 
     protected $config = [
         'xmlHeader'       => '<?xml version="1.0" encoding="UTF-8"?>',
+        'wrappers'        => [
+            'sitemap' => ['tag' => 'urlset'],
+            'index'   => ['tag' => 'sitemapindex'],
+        ],
         'sitemaps'        => [
-            'pages'    => [
-                'wrapTag'     => 'urlset',
+            'sitemap' => [
                 'maxFiles'    => 50000,
                 //49.59mb actually - a little bit smaller than 50mb, enough to write closing tag
                 'maxFileSize' => 52000000,
             ],
-            'sitemaps' => [
-                'wrapTag'  => 'sitemapindex',
+            'index'   => [
                 'maxFiles' => 500
             ],
         ],
@@ -63,8 +65,8 @@ class SitemapsConfig extends InjectableConfig
      */
     public function wrapTag(string $wrapper): string
     {
-        if (isset($this->config['sitemaps'][$wrapper]['wrapTag'])) {
-            return $this->config['sitemaps'][$wrapper]['wrapTag'];
+        if (isset($this->config['wrappers'][$wrapper]['tag'])) {
+            return $this->config['wrappers'][$wrapper]['tag'];
         }
 
         throw new \InvalidArgumentException("Unsupported wrapper \"$wrapper\".");
@@ -73,17 +75,17 @@ class SitemapsConfig extends InjectableConfig
     /**
      * Max files allowed for wrapper.
      *
-     * @param string $wrapper
+     * @param string $sitemap
      *
      * @return int
      */
-    public function maxFiles(string $wrapper): int
+    public function maxFiles(string $sitemap): int
     {
-        if (isset($this->config['sitemaps'][$wrapper]['maxFiles'])) {
-            return $this->config['sitemaps'][$wrapper]['maxFiles'];
+        if (isset($this->config['sitemaps'][$sitemap]['maxFiles'])) {
+            return $this->config['sitemaps'][$sitemap]['maxFiles'];
         }
 
-        throw new \InvalidArgumentException("Unsupported wrapper \"$wrapper\".");
+        throw new \InvalidArgumentException("Unsupported wrapper \"$sitemap\".");
     }
 
     /**
@@ -99,17 +101,17 @@ class SitemapsConfig extends InjectableConfig
     /**
      * Max file size allowed for sitemap file.
      *
-     * @param string $wrapper
+     * @param string $sitemap
      *
      * @return int
      */
-    public function maxFileSize(string $wrapper): int
+    public function maxFileSize(string $sitemap): int
     {
-        if (isset($this->config['sitemaps'][$wrapper]['maxFileSize'])) {
-            return $this->config['sitemaps'][$wrapper]['maxFileSize'];
+        if (isset($this->config['sitemaps'][$sitemap]['maxFileSize'])) {
+            return $this->config['sitemaps'][$sitemap]['maxFileSize'];
         }
 
-        throw new \InvalidArgumentException("Unsupported wrapper \"$wrapper\".");
+        throw new \InvalidArgumentException("Unsupported wrapper \"$sitemap\".");
     }
 
     /**

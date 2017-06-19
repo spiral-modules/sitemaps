@@ -2,9 +2,9 @@
 
 namespace Spiral\Sitemaps\Wrappers;
 
-class PagesWrapper extends AbstractWrapper
+class SitemapWrapper extends AbstractWrapper
 {
-    const WRAPPER = 'pages';
+    const WRAPPER = 'sitemap';
 
     /** @var array */
     protected $namespaces = [];
@@ -14,7 +14,7 @@ class PagesWrapper extends AbstractWrapper
      *
      * @param array $namespaces
      *
-     * @return PagesWrapper
+     * @return SitemapWrapper
      */
     public function withNamespaces(array $namespaces): self
     {
