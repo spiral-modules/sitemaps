@@ -9,7 +9,7 @@ class PagesSitemap extends AbstractSitemap implements ItemInterface
     /**
      * File compression enabled?
      *
-     * @var bool
+     * @var int|null
      */
     protected $compress = false;
 
@@ -17,6 +17,7 @@ class PagesSitemap extends AbstractSitemap implements ItemInterface
      * Add sitemap item.
      *
      * @param ItemInterface $item
+     *
      * @return int
      */
     public function addItem(ItemInterface $item): int
@@ -28,6 +29,7 @@ class PagesSitemap extends AbstractSitemap implements ItemInterface
      * Change filename.
      *
      * @param string $filename
+     *
      * @return PagesSitemap
      */
     public function withFilename(string $filename): self
@@ -73,14 +75,26 @@ class PagesSitemap extends AbstractSitemap implements ItemInterface
     /**
      * {@inheritdoc}
      *
-     * @param string $filename
-     * @param bool   $compress
+     * @param string   $filename
+     * @param int|null $compress
+     *
      * @throws \Exception
      */
-    public function open(string $filename, bool $compress = false)
+    public function open(string $filename, int $compress = null)
     {
+        if ($compress === true) {
+            $compress = 6;
+        }
+
+        if (!empty($compress) && ($compress < 1 || $compress > 9)) {
+            throw new \OutOfRangeException(sprintf(
+                'Unsupported compress value "%s". Valid values range is 1-9.',
+                $compress
+            ));
+        }
+
         $this->compress = $compress;
-        if ($compress) {
+        if (!empty($compress)) {
             $filename .= '.gz';
         }
 
@@ -93,7 +107,7 @@ class PagesSitemap extends AbstractSitemap implements ItemInterface
     protected function openHandler()
     {
         if ($this->compress) {
-            $this->handler = gzopen($this->filename, 'wb');
+            $this->handler = gzopen($this->filename, 'wb.' . $this->compress);
         } else {
             $this->handler = fopen($this->filename, 'wb');
         }

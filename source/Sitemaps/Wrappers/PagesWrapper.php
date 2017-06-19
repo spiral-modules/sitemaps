@@ -13,6 +13,7 @@ class PagesWrapper extends AbstractWrapper
      * Add namespaces (in case if any other except default are required).
      *
      * @param array $namespaces
+     *
      * @return PagesWrapper
      */
     public function withNamespaces(array $namespaces): self

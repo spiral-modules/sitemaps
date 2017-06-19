@@ -2,8 +2,6 @@
 
 namespace Spiral\Sitemaps;
 
-use Spiral\Core\Container\SingletonInterface;
-
 class SitemapValidator
 {
     /** @var SitemapsConfig */
@@ -23,6 +21,7 @@ class SitemapValidator
      * Is files count or file size limit reached for pages sitemap.
      *
      * @param SitemapInterface $sitemap
+     *
      * @return bool
      */
     public function isPagesSitemapLimitReached(SitemapInterface $sitemap)
@@ -44,6 +43,7 @@ class SitemapValidator
      * Is files count limit reached for index sitemap.
      *
      * @param SitemapInterface $sitemap
+     *
      * @return bool
      */
     public function isIndexSitemapLimitReached(SitemapInterface $sitemap)

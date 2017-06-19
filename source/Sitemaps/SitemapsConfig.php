@@ -46,6 +46,7 @@ class SitemapsConfig extends InjectableConfig
      * Get namespace by short alias provided.
      *
      * @param string $namespace
+     *
      * @return string
      */
     public function getNamespace(string $namespace): string
@@ -57,6 +58,7 @@ class SitemapsConfig extends InjectableConfig
      * Wrap tag for wrapper.
      *
      * @param string $wrapper
+     *
      * @return string
      */
     public function wrapTag(string $wrapper): string
@@ -72,6 +74,7 @@ class SitemapsConfig extends InjectableConfig
      * Max files allowed for wrapper.
      *
      * @param string $wrapper
+     *
      * @return int
      */
     public function maxFiles(string $wrapper): int
@@ -97,6 +100,7 @@ class SitemapsConfig extends InjectableConfig
      * Max file size allowed for sitemap file.
      *
      * @param string $wrapper
+     *
      * @return int
      */
     public function maxFileSize(string $wrapper): int

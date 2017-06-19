@@ -22,7 +22,7 @@ class Sitemaps
     /** @var string */
     protected $filename;
 
-    /** @var bool */
+    /** @var int|null */
     protected $compress;
 
     /** @var string */
@@ -85,11 +85,11 @@ class Sitemaps
     /**
      * Open sitemap.
      *
-     * @param string $filename
-     * @param string $directory
-     * @param bool   $compress
+     * @param string   $filename
+     * @param string   $directory
+     * @param int|null $compress
      */
-    public function open(string $filename, string $directory, bool $compress = false)
+    public function open(string $filename, string $directory, int $compress = null)
     {
         if (empty($this->pagesWrapper) || empty($this->sitemapsWrapper)) {
             throw new \LogicException("Wrappers should be set first.");
@@ -106,6 +106,7 @@ class Sitemaps
      * Add item to sitemap.
      *
      * @param ItemInterface $item
+     *
      * @return int
      */
     public function addItem(ItemInterface $item): int
@@ -227,6 +228,7 @@ class Sitemaps
      * Make filename for a moved pages sitemap.
      *
      * @param string $filename
+     *
      * @return string
      */
     protected function makeMovedFilename(string $filename): string

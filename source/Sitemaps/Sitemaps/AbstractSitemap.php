@@ -49,6 +49,7 @@ abstract class AbstractSitemap implements SitemapInterface
      * Add sitemap item.
      *
      * @param ItemInterface $item
+     *
      * @return int
      * @throws \Exception
      */
@@ -97,6 +98,7 @@ abstract class AbstractSitemap implements SitemapInterface
      * Open file.
      *
      * @param string $filename
+     *
      * @throws \Exception
      */
     public function open(string $filename)
@@ -124,6 +126,7 @@ abstract class AbstractSitemap implements SitemapInterface
      * Write data portion.
      *
      * @param $data
+     *
      * @throws \Exception
      * @return int
      */
@@ -142,6 +145,7 @@ abstract class AbstractSitemap implements SitemapInterface
      * Write data into file handler.
      *
      * @param $data
+     *
      * @return int
      */
     protected function writeIntoHandler($data): int
