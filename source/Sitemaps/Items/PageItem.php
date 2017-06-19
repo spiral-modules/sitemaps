@@ -4,6 +4,9 @@ namespace Spiral\Sitemaps\Items;
 
 use Spiral\Sitemaps\ItemInterface;
 
+/**
+ * @link https://support.google.com/webmasters/topic/6080646
+ */
 class PageItem implements ItemInterface
 {
     /**
@@ -18,6 +21,12 @@ class PageItem implements ItemInterface
         'yearly',
         'never',
     ];
+
+    /** @var ImageItem[] */
+    private $images = [];
+
+    /** @var AlterLangItem[] */
+    private $alterLangs;
 
     /** @var string */
     private $loc;
@@ -66,11 +75,31 @@ class PageItem implements ItemInterface
     }
 
     /**
+     * Add image item.
+     *
+     * @param ImageItem $image
+     */
+    public function addImage(ImageItem $image)
+    {
+        $this->images[] = $image;
+    }
+
+    /**
+     * Add alter lang item.
+     *
+     * @param AlterLangItem $lang
+     */
+    public function addAlterLang(AlterLangItem $lang)
+    {
+        $this->alterLangs[] = $lang;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function render(): string
     {
-        $data = $this->loc() . $this->lastmod() . $this->changefreq() . $this->priority();
+        $data = $this->loc() . $this->lastmod() . $this->changefreq() . $this->priority() . $this->images() . $this->alterLangs();
 
         return sprintf('<url>%s</url>', $data);
     }
@@ -125,5 +154,35 @@ class PageItem implements ItemInterface
         }
 
         return '';
+    }
+
+    /**
+     * Render images.
+     *
+     * @return string
+     */
+    protected function images(): string
+    {
+        $data = '';
+        foreach ($this->images as $image) {
+            $data .= $image->render();
+        }
+
+        return $data;
+    }
+
+    /**
+     * Render alter langs.
+     *
+     * @return string
+     */
+    protected function alterLangs(): string
+    {
+        $data = '';
+        foreach ($this->alterLangs as $lang) {
+            $data .= $lang->render();
+        }
+
+        return $data;
     }
 }
