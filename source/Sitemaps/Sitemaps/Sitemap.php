@@ -11,7 +11,7 @@ class Sitemap extends AbstractSitemap implements ItemInterface
      *
      * @var int|null
      */
-    protected $compress = null;
+    protected $compression = null;
 
     /**
      * Add sitemap item.
@@ -33,6 +33,40 @@ class Sitemap extends AbstractSitemap implements ItemInterface
         $data = $this->loc() . $this->lastmod();
 
         return sprintf('<sitemap>%s</sitemap>', $data);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param string        $filename
+     * @param int|bool|null $compression
+     *
+     * @throws \Exception
+     */
+    public function open(string $filename, $compression = null)
+    {
+        $this->handleCompression($compression);
+
+        if ($this->compressionEnabled()) {
+            $filename .= '.gz';
+        }
+
+        parent::open($filename);
+    }
+
+    /**
+     * @param int $fileSizeLimit
+     */
+    public function setFileSizeLimit(int $fileSizeLimit)
+    {
+        if ($this->isOpened()) {
+            throw new \LogicException(sprintf(
+                'Unable to set files count limit "%s" - sitemap is already opened.',
+                $fileSizeLimit
+            ));
+        }
+
+        $this->fileSizeLimit = $fileSizeLimit;
     }
 
     /**
@@ -58,32 +92,32 @@ class Sitemap extends AbstractSitemap implements ItemInterface
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @param string   $filename
-     * @param int|null $compress
-     *
-     * @throws \Exception
+     * @param int|bool|null $compression
      */
-    public function open(string $filename, int $compress = null)
+    protected function handleCompression($compression)
     {
-        if ($compress === true) {
-            $compress = 6;
+        if ($compression === true) {
+            $compression = 6;
         }
 
-        if (!empty($compress) && ($compress < 1 || $compress > 9)) {
+        if (!empty($compression) && ($compression < 1 || $compression > 9)) {
             throw new \OutOfRangeException(sprintf(
                 'Unsupported compress value "%s". Valid values range is 1-9.',
-                $compress
+                $compression
             ));
         }
 
-        $this->compress = $compress;
-        if (!empty($compress)) {
-            $filename .= '.gz';
-        }
+        $this->compression = $compression;
+    }
 
-        parent::open($filename);
+    /**
+     * Is compression enabled
+     *
+     * @return bool
+     */
+    protected function compressionEnabled(): bool
+    {
+        return (bool)$this->compression;
     }
 
     /**
@@ -91,8 +125,8 @@ class Sitemap extends AbstractSitemap implements ItemInterface
      */
     protected function openHandler()
     {
-        if ($this->compress) {
-            $this->handler = gzopen($this->filename, 'wb' . $this->compress);
+        if ($this->compressionEnabled()) {
+            $this->handler = gzopen($this->filename, 'wb' . $this->compression);
         } else {
             $this->handler = fopen($this->filename, 'wb');
         }
@@ -103,7 +137,7 @@ class Sitemap extends AbstractSitemap implements ItemInterface
      */
     protected function writeIntoHandler($data): int
     {
-        if ($this->compress) {
+        if ($this->compressionEnabled()) {
             return gzwrite($this->handler, $data);
         } else {
             return fwrite($this->handler, $data);
@@ -115,7 +149,7 @@ class Sitemap extends AbstractSitemap implements ItemInterface
      */
     protected function closeHandler()
     {
-        if ($this->compress) {
+        if ($this->compressionEnabled()) {
             gzclose($this->handler);
         } else {
             fclose($this->handler);

@@ -85,6 +85,16 @@ class PageItem implements ItemInterface
     }
 
     /**
+     * Add image item.
+     *
+     * @param VideoItem $video
+     */
+    public function addVideo(VideoItem $video)
+    {
+        $this->video = $video;
+    }
+
+    /**
      * Add alter lang item.
      *
      * @param AlterLangItem $lang

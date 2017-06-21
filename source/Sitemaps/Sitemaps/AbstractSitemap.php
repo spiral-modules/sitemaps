@@ -4,13 +4,24 @@ namespace Spiral\Sitemaps\Sitemaps;
 
 use Spiral\Sitemaps\ItemInterface;
 use Spiral\Sitemaps\SitemapInterface;
-use Spiral\Sitemaps\WrapperInterface;
 
-/**
- * @link https://www.sitemaps.org/ru/protocol.html
- */
 abstract class AbstractSitemap implements SitemapInterface
 {
+    /**
+     * Basic XML header tag.
+     */
+    const DECLARATION = '<?xml version="1.0" encoding="UTF-8"?>';
+
+    /**
+     * Default sitemap root node namespace.
+     */
+    const DEFAULT_NS = 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"';
+
+    /**
+     * Root node tag, urlset or sitemapindex.
+     */
+    const ROOT_NODE_TAG = null;
+
     /**
      * File resource handler.
      *
@@ -26,11 +37,11 @@ abstract class AbstractSitemap implements SitemapInterface
     protected $filename = null;
 
     /**
-     * XML wrapper.
+     * Sitemap namespaces.
      *
-     * @var null|WrapperInterface
+     * @var array
      */
-    protected $wrapper;
+    protected $namespaces = [];
 
     /**
      * Allowed sitemap files count, if set.
@@ -61,77 +72,49 @@ abstract class AbstractSitemap implements SitemapInterface
     protected $countItems = 0;
 
     /**
-     * @param null|WrapperInterface $wrapper
-     * @param null|int              $filesCountLimit
-     * @param null|int              $fileSizeLimit
+     * @param array    $namespaces
+     * @param null|int $filesCountLimit
+     * @param null|int $fileSizeLimit
      */
-    public function __construct(WrapperInterface $wrapper = null, int $filesCountLimit = null, int $fileSizeLimit = null)
-    {
-        $this->wrapper = $wrapper;
+    public function __construct(
+        array $namespaces = [],
+        int $filesCountLimit = null,
+        int $fileSizeLimit = null
+    ) {
+        $this->namespaces = $namespaces;
         $this->filesCountLimit = $filesCountLimit;
         $this->fileSizeLimit = $fileSizeLimit;
     }
 
     /**
-     * Set new wrapper. File should not be opened by that time.
-     *
-     * @param WrapperInterface $wrapper
+     * {@inheritdoc}
      */
-    public function setWrapper(WrapperInterface $wrapper)
+    public function setNamespaces(array $namespaces)
     {
         if ($this->isOpened()) {
-            throw new \LogicException(sprintf('Unable to set wrapper "%s" - sitemap is already opened.', get_class($wrapper)));
+            throw new \LogicException('Unable to set namespaces - sitemap is already opened.');
         }
 
-        $this->wrapper = $wrapper;
+        $this->namespaces = $namespaces;
     }
 
     /**
-     * @param int $filesCountLimit
+     * {@inheritdoc}
      */
     public function setFilesCountLimit(int $filesCountLimit)
     {
         if ($this->isOpened()) {
-            throw new \LogicException(sprintf('Unable to set files count limit "%s" - sitemap is already opened.', $filesCountLimit));
+            throw new \LogicException(sprintf(
+                'Unable to set files count limit "%s" - sitemap is already opened.',
+                $filesCountLimit
+            ));
         }
 
         $this->filesCountLimit = $filesCountLimit;
     }
 
     /**
-     * @param int $fileSizeLimit
-     */
-    public function setFileSizeLimit(int $fileSizeLimit)
-    {
-        if ($this->isOpened()) {
-            throw new \LogicException(sprintf('Unable to set files count limit "%s" - sitemap is already opened.', $fileSizeLimit));
-        }
-
-        $this->fileSizeLimit = $fileSizeLimit;
-    }
-
-    /**
      * {@inheritdoc}
-     */
-    public function getFileSize(): int
-    {
-        return $this->fileSize;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getItemsCount(): int
-    {
-        return $this->countItems;
-    }
-
-    /**
-     * Open file.
-     *
-     * @param string $filename
-     *
-     * @throws \Exception
      */
     public function open(string $filename)
     {
@@ -140,23 +123,20 @@ abstract class AbstractSitemap implements SitemapInterface
             return;
         }
 
-        if (empty($this->wrapper)) {
-            throw new \LogicException("Wrapper should be set first.");
-        }
-
         $this->filename = $filename;
 
         $this->openHandler();
-        $this->writeData($this->wrapper->header());
+        $this->writeDeclaration();
+        $this->openRootNode();
     }
 
     /**
-     * Close file.
+     * {@inheritdoc}
      */
     public function close()
     {
         if ($this->isOpened()) {
-            $this->writeData($this->wrapper->footer());
+            $this->closeRootNode();
             $this->closeHandler();
         }
 
@@ -251,6 +231,36 @@ abstract class AbstractSitemap implements SitemapInterface
     }
 
     /**
+     * Write sitemap XML dclaration.
+     *
+     * @throws \Exception
+     */
+    protected function writeDeclaration()
+    {
+        $this->writeData(static::DECLARATION);
+    }
+
+    /**
+     * Write open root node tag.
+     *
+     * @throws \Exception
+     */
+    protected function openRootNode()
+    {
+        $this->writeData(sprintf('<%s %s>', static::ROOT_NODE_TAG, $this->namespaces()));
+    }
+
+    /**
+     * Write close root node tag.
+     *
+     * @throws \Exception
+     */
+    protected function closeRootNode()
+    {
+        $this->writeData(sprintf('</%s>', static::ROOT_NODE_TAG));
+    }
+
+    /**
      * Write data into file handler.
      *
      * @param $data
@@ -268,5 +278,18 @@ abstract class AbstractSitemap implements SitemapInterface
     protected function closeHandler()
     {
         fclose($this->handler);
+    }
+
+    /**
+     * List of namespaces, string formatted.
+     *
+     * @return string
+     */
+    protected function namespaces(): string
+    {
+        $namespaces = $this->namespaces;
+        $namespaces[] = static::DEFAULT_NS;
+
+        return join(' ', array_unique($namespaces));
     }
 }

@@ -5,17 +5,9 @@ namespace Spiral\Sitemaps;
 use Spiral\Files\FileManager;
 use Spiral\Sitemaps\Sitemaps\IndexSitemap;
 use Spiral\Sitemaps\Sitemaps\Sitemap;
-use Spiral\Sitemaps\Wrappers\SitemapWrapper;
-use Spiral\Sitemaps\Wrappers\IndexSitemapWrapper;
 
 class Sitemaps
 {
-    /** @var SitemapWrapper */
-    protected $pagesWrapper;
-
-    /** @var IndexSitemapWrapper */
-    protected $sitemapsWrapper;
-
     /** @var SitemapsConfig */
     protected $config;
 
@@ -23,7 +15,7 @@ class Sitemaps
     protected $filename;
 
     /** @var int|null */
-    protected $compress;
+    protected $compression;
 
     /** @var string */
     protected $directory;
@@ -46,6 +38,16 @@ class Sitemaps
     protected $sitemaps = [];
 
     /**
+     * Passed sitemap namespaces.
+     *
+     * @var array
+     */
+    protected $namespaces = [
+        'sitemap' => [],
+        'index'   => []
+    ];
+
+    /**
      * @param SitemapsConfig $config
      * @param FileManager    $files
      */
@@ -56,52 +58,44 @@ class Sitemaps
     }
 
     /**
-     * @param WrapperInterface $wrapper
+     * Set sitemap namespaces.
+     *
+     * @param array $namespaces
      */
-    public function setSitemapWrapper(WrapperInterface $wrapper)
+    public function setSitemapNamespaces(array $namespaces)
     {
-        if (!empty($this->currentSitemap)) {
-            throw new \LogicException("Wrapper can't be set after process is opened.");
-        }
-
-        $this->pagesWrapper = $wrapper;
+        $this->namespaces['sitemap'] = $namespaces;
     }
 
     /**
-     * @param WrapperInterface $wrapper
+     * Set index sitemap namespaces.
+     *
+     * @param array $namespaces
      */
-    public function setIndexSitemapWrapper(WrapperInterface $wrapper)
+    public function setIndexSitemapNamespaces(array $namespaces)
     {
-        if (!empty($this->currentSitemap)) {
-            throw new \LogicException("Wrapper can't be set after process is opened.");
-        }
-
-        $this->sitemapsWrapper = $wrapper;
+        $this->namespaces['index'] = $namespaces;
     }
 
     /**
      * Open sitemap.
      *
-     * @param string   $filename
-     * @param string   $directory
-     * @param int|null $compress
+     * @param string        $filename
+     * @param string        $directory
+     * @param int|bool|null $compression
      */
-    public function open(string $filename, string $directory, int $compress = null)
+    public function open(string $filename, string $directory, $compression = null)
     {
         if (!empty($this->currentSitemap)) {
             //already opened.
             return;
         }
 
-        if (empty($this->pagesWrapper) || empty($this->sitemapsWrapper)) {
-            throw new \LogicException("Wrappers should be set first.");
-        }
-
         $this->filename = $filename;
-        $this->compress = $compress;
+        $this->compression = $compression;
         $this->directory = $directory;
 
-        $this->createNewSitemap();
+        $this->newSitemap();
     }
 
     /**
@@ -114,12 +108,12 @@ class Sitemaps
     public function addItem(ItemInterface $item)
     {
         if (empty($this->currentSitemap)) {
-            throw new \LogicException("Sitemap process should be opened first.");
+            throw new \LogicException('Call "open" method first.');
         }
 
         if (!$this->currentSitemap->addItem($item)) {
             //Previous sitemap is full, create new.
-            $this->createNewSitemap();
+            $this->newSitemap();
         }
 
         return $this->currentSitemap->addItem($item);
@@ -133,22 +127,28 @@ class Sitemaps
      */
     public function close()
     {
-        if (empty($this->currentSitemap)) {
-            return null;
+        //Close current sitemap, if opened
+        if (!empty($this->currentSitemap)) {
+            $this->currentSitemap->close();
         }
 
-        $this->currentSitemap->close();
-
+        //only one sitemap
         if (!count($this->sitemaps)) {
-            $sitemap = $this->currentSitemap;
-            $this->currentSitemap = null;
-
-            return $sitemap;
+            return $this->currentSitemap;
         }
 
         $this->storeCurrentSitemap();
-        $this->currentSitemap = null;
 
+        return $this->packIndexSitemap();
+    }
+
+    /**
+     * Pack all sitemap files int index sitemap.
+     *
+     * @return IndexSitemap
+     */
+    protected function packIndexSitemap(): IndexSitemap
+    {
         $index = $this->makeIndexSitemap();
         $index->open($this->directory . $this->filename);
 
@@ -156,7 +156,7 @@ class Sitemaps
             if (!$index->addSitemap($sitemap)) {
                 throw new \OverflowException(sprintf(
                     'Sitemap Index is full, "%s" limit is reached (%s actual sitemaps)',
-                    $index->getItemsCount(),
+                    $this->config->maxFiles('index'),
                     count($this->sitemaps)
                 ));
             }
@@ -170,15 +170,29 @@ class Sitemaps
     /**
      * Create and open new sitemap.
      */
-    public function createNewSitemap()
+    public function newSitemap()
     {
         if (!empty($this->currentSitemap)) {
             $this->currentSitemap->close();
             $this->storeCurrentSitemap();
-            $this->currentSitemap = null;
         }
 
-        $this->openSitemap();
+        $this->currentSitemap = $this->makeSitemap();
+        $this->currentSitemap->open($this->directory . $this->filename, $this->compression);
+    }
+
+    /**
+     * Create sitemap.
+     *
+     * @return SitemapInterface
+     */
+    protected function makeSitemap(): SitemapInterface
+    {
+        return new Sitemap(
+            $this->namespaces['sitemap'],
+            $this->config->maxFiles('sitemap'),
+            $this->config->maxFileSize('sitemap')
+        );
     }
 
     /**
@@ -188,7 +202,10 @@ class Sitemaps
      */
     protected function makeIndexSitemap(): IndexSitemap
     {
-        return new IndexSitemap($this->sitemapsWrapper);
+        return new IndexSitemap(
+            $this->namespaces['index'],
+            $this->config->maxFiles('index')
+        );
     }
 
     /**
@@ -202,25 +219,18 @@ class Sitemaps
     }
 
     /**
-     * Open new sitemap.
-     */
-    protected function openSitemap()
-    {
-        $this->currentSitemap = new Sitemap($this->pagesWrapper);
-        $this->currentSitemap->open($this->directory . $this->filename, $this->compress);
-    }
-
-    /**
      * Rename and move current sitemap. Store it in sitemaps array.
      */
     protected function storeCurrentSitemap()
     {
-        $movedFilename = $this->makeMovedFilename($this->filename);
+        if (!empty($this->currentSitemap)) {
+            $destinationFilename = $this->destinationFilename($this->filename);
 
-        $this->files->ensureDirectory($this->directory . $this->config->sitemapsDirectory());
-        $this->files->move($this->filename, $this->directory . $movedFilename);
+            $this->files->ensureDirectory($this->directory . $this->config->subDirectory());
+            $this->files->move($this->filename, $this->directory . $destinationFilename);
 
-        $this->sitemaps[$movedFilename] = $this->currentSitemap;
+            $this->sitemaps[$destinationFilename] = $this->currentSitemap;
+        }
     }
 
     /**
@@ -230,8 +240,8 @@ class Sitemaps
      *
      * @return string
      */
-    protected function makeMovedFilename(string $filename): string
+    protected function destinationFilename(string $filename): string
     {
-        return $this->config->sitemapsDirectory() . (count($this->sitemaps) + 1) . '-' . basename($filename);
+        return $this->config->subDirectory() . (count($this->sitemaps) + 1) . '-' . basename($filename);
     }
 }

@@ -10,12 +10,7 @@ class SitemapsConfig extends InjectableConfig
     const CONFIG = 'sitemaps';
 
     protected $config = [
-        'xmlHeader'       => '<?xml version="1.0" encoding="UTF-8"?>',
-        'wrappers'        => [
-            'sitemap' => ['tag' => 'urlset'],
-            'index'   => ['tag' => 'sitemapindex'],
-        ],
-        'sitemaps'        => [
+        'sitemaps'  => [
             'sitemap' => [
                 'maxFiles'    => 50000,
                 //49.59mb actually - a little bit smaller than 50mb, enough to write closing tag
@@ -25,51 +20,36 @@ class SitemapsConfig extends InjectableConfig
                 'maxFiles' => 500
             ],
         ],
-        'directory'       => 'sitemaps/',
-        'knownNamespaces' => [
-            'default'   => 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
-            'image'     => 'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"',
-            'video'     => 'xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"',
-            'alterLang' => 'xmlns:xhtml="http://www.w3.org/1999/xhtml"',
+        'directory' => 'sitemaps/',
+        'aliases'   => [
+            'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"'           => ['default'],
+            'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"' => ['image', 'images'],
+            'xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"' => ['video', 'videos'],
+            'xmlns:xhtml="http://www.w3.org/1999/xhtml"'                    => [
+                'alterLang',
+                'alterLangs',
+                'lang',
+                'langs'
+            ]
         ]
     ];
 
     /**
-     * List of know namespaces to allow using aliases.
-     *
-     * @return array
-     */
-    public function knownNamespaces(): array
-    {
-        return $this->config['knownNamespaces'];
-    }
-
-    /**
      * Get namespace by short alias provided.
      *
-     * @param string $namespace
+     * @param string $alias
      *
      * @return string
      */
-    public function getNamespace(string $namespace): string
+    public function getNamespace(string $alias): string
     {
-        return $this->config['knownNamespaces'][$namespace] ?? $namespace;
-    }
-
-    /**
-     * Wrap tag for wrapper.
-     *
-     * @param string $wrapper
-     *
-     * @return string
-     */
-    public function wrapTag(string $wrapper): string
-    {
-        if (isset($this->config['wrappers'][$wrapper]['tag'])) {
-            return $this->config['wrappers'][$wrapper]['tag'];
+        foreach ($this->config['aliases'] as $namespace => $aliases) {
+            if (in_array($alias, $aliases)) {
+                return $namespace;
+            }
         }
 
-        throw new \InvalidArgumentException("Unsupported wrapper \"$wrapper\".");
+        return $alias;
     }
 
     /**
@@ -86,16 +66,6 @@ class SitemapsConfig extends InjectableConfig
         }
 
         throw new \InvalidArgumentException("Unsupported wrapper \"$sitemap\".");
-    }
-
-    /**
-     * Basic XML file header.
-     *
-     * @return string
-     */
-    public function xmlHeader(): string
-    {
-        return $this->config['xmlHeader'];
     }
 
     /**
@@ -119,7 +89,7 @@ class SitemapsConfig extends InjectableConfig
      *
      * @return string
      */
-    public function sitemapsDirectory(): string
+    public function subDirectory(): string
     {
         return $this->config['directory'];
     }

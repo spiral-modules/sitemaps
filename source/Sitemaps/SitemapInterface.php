@@ -2,19 +2,35 @@
 
 namespace Spiral\Sitemaps;
 
+/**
+ * @link https://www.sitemaps.org/ru/protocol.html
+ */
 interface SitemapInterface
 {
     /**
-     * Sitemap items count.
-     *
-     * @return int
+     * @param int $filesCountLimit
      */
-    public function getItemsCount(): int;
+    public function setFilesCountLimit(int $filesCountLimit);
 
     /**
-     * Sitemap file size.
+     * Set namespaces. File should not be opened by that time.
      *
-     * @return int
+     * @param array $namespaces
+     * @throws \LogicException
      */
-    public function getFileSize(): int;
+    public function setNamespaces(array $namespaces);
+
+    /**
+     * Open file.
+     *
+     * @param string $filename
+     *
+     * @throws \Exception
+     */
+    public function open(string $filename);
+
+    /**
+     * Close file.
+     */
+    public function close();
 }
