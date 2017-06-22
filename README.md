@@ -23,62 +23,86 @@ Below are some examples of how to use current package:
 
 ### Basic sitemap file generating
 
-```
+```php
 /**
- * Example 1.1, single sitemap via constructing.
+ * Constructor parameters are optional
  *
- * @param \Spiral\Sitemaps\Sitemaps\Sitemap $sitemap
- * @param \Spiral\Sitemaps\SitemapsConfig   $config
+ * @param array $namespaces       List of namespaces to be added.
+ *                                Default one will be added anyway, add other ones when adding urls with images, video, alter langs, etc.
+ * @param int   $maxFilesLimit    Limit of urls added, if not set - no files count limit.
+ * @param int   $maxFileSizeLimit Limit of uncompressed sitemap file size, if not set - no file size limit.
  */
-public function create(SitemapsConfig $config)
-{
-    $sitemap = new \Spiral\Sitemaps\Sitemaps\Sitemap(
-        ['video', 'image', 'alterlang'],
-        $config->maxFiles('sitemap'),
-        $config->maxFileSize('sitemap')
-    );
-    
-    $sitemap->open('sitemap.xml');
-    $sitemap->addItem(new PageItem('location.com'));
-    $sitemap->close();
-}
+$sitemap = new \Spiral\Sitemaps\Sitemaps\Sitemap(
+    [
+        'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"',
+        'xmlns:xhtml="http://www.w3.org/1999/xhtml"'
+    ],
+    $config->maxFiles('sitemap'),
+    $config->maxFileSize('sitemap')
+);
+//Or, just set parameters before opening sitemap:
+$sitemap = new Sitemap();
+$sitemap->setFilesCountLimit($config->maxFiles('sitemap'));
+$sitemap->setFileSizeLimit($config->maxFileSize('sitemap'));
+$sitemap->setNamespaces([
+    'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"',
+    'xmlns:xhtml="http://www.w3.org/1999/xhtml"'
+]);
 ```
-> First argument is namespaces array, can set namespaces if you're using additional content.<br/>
-> If you pass `[]`, default one will be used.
+> `$config` is instance of `\Spiral\Sitemaps\SitemapsConfig` class, you can use numbers directly.
 
+`\Spiral\Sitemaps\Namespaces` class is dedicated for using namespace aliases instead of passing full namespace strings:
+```php
+$sitemap->setNamespaces([
+    'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"',
+    'xmlns:xhtml="http://www.w3.org/1999/xhtml"'
+]);
+//Is equal to
+$sitemap->setNamespaces($namespaces->get(['image', 'lang']));
 ```
-/**
- * Example 1.2, single sitemap via DI container.
- * In this case no limits will be set, let's add them
- *
- * @param \Spiral\Sitemaps\Sitemaps\Sitemap $sitemap
- * @param \Spiral\Sitemaps\SitemapsConfig   $config
- */
-public function create(Sitemap $sitemap, SitemapsConfig $config)
-{
-    $sitemap->setFilesCountLimit($config->maxFiles('sitemap'));
-    $sitemap->setFileSizeLimit($config->maxFileSize('sitemap'));
+> You can add your own aliases in config
 
-    $sitemap->open('sitemap.xml');
-    $sitemap->addItem(new PageItem('location.com'));
-    $sitemap->close();
-}
-```
+Adding items to sitemap:
 
-
-> You can set namespaces if you're using additional content, use it before you open the file
-
-```
+```php
 $item = new \Spiral\Sitemaps\Items\PageItem('location.com');
 $item->addImage(new \Spiral\Sitemaps\Items\ImageItem('image-location.com'));
-$item->addAlterLang(new \Spiral\Sitemaps\Items\AlterLangItem('de','location.de'));
-$item->addVideo(new \Spiral\Sitemaps\Items\VideoItem('video-location.de'));
+$item->addAlterLang(new \Spiral\Sitemaps\Items\AlterLangItem('de', 'location.de'));
+$item->addVideo(new \Spiral\Sitemaps\Items\VideoItem('video-location.com'));
 
-$sitemap->setNamespaces(['video', 'image', 'alterlang']);`
-$sitemap->open('sitemap.xml');
-$sitemap->addItem($item);
+$sitemap->open('sitemap.xml', 8);
+$sitemap->addItem(new \Spiral\Sitemaps\Items\PageItem('location.com'));
 $sitemap->close();
 ```
+
+Output for
+
+```php
+$sitemap = new Sitemap(
+    $namespaces->get(['image', 'lang']),
+    $config->maxFiles('sitemap'),
+    $config->maxFileSize('sitemap')
+);
+
+$item = new \Spiral\Sitemaps\Items\PageItem('location.com');
+$item->addImage(new \Spiral\Sitemaps\Items\ImageItem('image-location.com'));
+$item->addAlterLang(new \Spiral\Sitemaps\Items\AlterLangItem('de', 'location.de'));
+
+$sitemap->open('sitemap.xml', 8);
+$sitemap->addItem(new \Spiral\Sitemaps\Items\PageItem('location.com'));
+$sitemap->close();
+```
+will be:
+
+```xml
+
+
+```
+###todo xml output example
+###todo video asset
+
+
+### Sitemap Index file generating
 
 
 

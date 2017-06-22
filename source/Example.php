@@ -6,6 +6,7 @@ use Spiral\Core\Service;
 use Spiral\Files\FileManager;
 use Spiral\Sitemaps\Items\ImageItem;
 use Spiral\Sitemaps\Items\PageItem;
+use Spiral\Sitemaps\Namespaces;
 use Spiral\Sitemaps\Sitemaps;
 use Spiral\Sitemaps\Sitemaps\Sitemap;
 use Spiral\Sitemaps\SitemapsConfig;
@@ -60,25 +61,50 @@ class SitemapExample
      *
      * @param \Spiral\Sitemaps\Sitemaps\Sitemap $sitemap
      * @param \Spiral\Sitemaps\SitemapsConfig   $config
+     * @param \Spiral\Sitemaps\Namespaces       $namespaces
      */
-    public function byContainer(Sitemap $sitemap, SitemapsConfig $config)
+    public function example(Sitemap $sitemap, SitemapsConfig $config, Namespaces $namespaces)
     {
-        //In
-        //optional parameters, default namespace will be added anyway
+        //Constructor parameters are optional, default namespace will be added anyway
+        /**
+         * Constructor parameters are optional
+         *
+         * @param array $namespaces       List of namespaces to be added.
+         *                                Default one will be added anyway, add other ones when adding urls with images, video, alter langs, etc.
+         * @param int   $maxFilesLimit    Limit of urls added, if not set - no limit
+         * @param int   $maxFileSizeLimit Limit of uncompressed sitemap file size, if not set - no limit
+         */
+        $sitemap = new Sitemap(
+            [
+                'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"',
+                'xmlns:xhtml="http://www.w3.org/1999/xhtml"'
+            ],
+            $config->maxFiles('sitemap'),
+            $config->maxFileSize('sitemap')
+        );
+
+        //Or, just set parameters before opening sitemap
+        $sitemap = new Sitemap();
         $sitemap->setFilesCountLimit($config->maxFiles('sitemap'));
         $sitemap->setFileSizeLimit($config->maxFileSize('sitemap'));
-        $sitemap->setNamespaces(['video', 'image', 'alterlang']);
+        $sitemap->setNamespaces([
+            'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"',
+            'xmlns:xhtml="http://www.w3.org/1999/xhtml"'
+        ]);
+
+        //Namespaces class dedicated for using namespace aliases instead of passing full namespace strings, you can add your own aliases in config.
+        $sitemap->setNamespaces([
+            'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"',
+            'xmlns:xhtml="http://www.w3.org/1999/xhtml"'
+        ]);
+        //Is equal to
+        $sitemap->setNamespaces($namespaces->get(['image', 'lang']));
 
         $item = new \Spiral\Sitemaps\Items\PageItem('location.com');
         $item->addImage(new \Spiral\Sitemaps\Items\ImageItem('image-location.com'));
-        $item->addAlterLang(new \Spiral\Sitemaps\Items\AlterLangItem('de','location.de'));
+        $item->addAlterLang(new \Spiral\Sitemaps\Items\AlterLangItem('de', 'location.de'));
         $item->addVideo(new \Spiral\Sitemaps\Items\VideoItem('video-location.de'));
 
-        $sitemap = new \Spiral\Sitemaps\Sitemaps\Sitemap(
-            ['video', 'image', 'alterlang'],
-            $config->maxFiles('sitemap'),
-        $config->maxFileSize('sitemap')
-    );
         $sitemap->open('sitemap.xml', 8);
         $sitemap->addItem(new \Spiral\Sitemaps\Items\PageItem('location.com'));
         $sitemap->close();
@@ -130,13 +156,13 @@ class IndexSitemapExample
      */
     public function byConstructing(SitemapsConfig $config)
     {
-        $index = new Sitemaps\IndexSitemap(
-            ['video', 'image', 'xmlns=""'],
-            $config->maxFiles('index')
-        );
+        $index = new \Spiral\Sitemaps\Sitemaps\IndexSitemap([], $config->maxFiles('index'));
+        //or
+        $index = new \Spiral\Sitemaps\Sitemaps\IndexSitemap();
+        $index->setFilesCountLimit( $config->maxFiles('index'));
 
         $index->open('sitemap.xml');
-        $index->addSitemap(new Sitemap());
+        $index->addSitemap(new \Spiral\Sitemaps\Sitemaps\Sitemap());
         $index->close();
     }
 }
