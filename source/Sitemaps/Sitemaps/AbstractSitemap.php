@@ -2,6 +2,8 @@
 
 namespace Spiral\Sitemaps\Sitemaps;
 
+use Spiral\Sitemaps\Exceptions\AlreadyOpenedSitemapException;
+use Spiral\Sitemaps\Exceptions\NotOpenedSitemapException;
 use Spiral\Sitemaps\ItemInterface;
 use Spiral\Sitemaps\SitemapInterface;
 
@@ -92,7 +94,7 @@ abstract class AbstractSitemap implements SitemapInterface
     public function setNamespaces(array $namespaces)
     {
         if ($this->isOpened()) {
-            throw new \LogicException('Unable to set namespaces - sitemap is already opened.');
+            throw new AlreadyOpenedSitemapException('Unable to set namespaces.');
         }
 
         $this->namespaces = $namespaces;
@@ -104,10 +106,7 @@ abstract class AbstractSitemap implements SitemapInterface
     public function setFilesCountLimit(int $filesCountLimit)
     {
         if ($this->isOpened()) {
-            throw new \LogicException(sprintf(
-                'Unable to set files count limit "%s" - sitemap is already opened.',
-                $filesCountLimit
-            ));
+            throw new AlreadyOpenedSitemapException(sprintf('Unable to set files count limit "%s".', $filesCountLimit));
         }
 
         $this->filesCountLimit = $filesCountLimit;
@@ -115,6 +114,9 @@ abstract class AbstractSitemap implements SitemapInterface
 
     /**
      * {@inheritdoc}
+     */
+    /**
+     * @param string $filename
      */
     public function open(string $filename)
     {
@@ -157,7 +159,6 @@ abstract class AbstractSitemap implements SitemapInterface
      * @param ItemInterface $item
      *
      * @return bool
-     * @throws \Exception
      */
     protected function add(ItemInterface $item): bool
     {
@@ -166,7 +167,7 @@ abstract class AbstractSitemap implements SitemapInterface
             return false;
         }
 
-        if (!empty($this->fileSizeLimit) && $this->fileSize >= $this->fileSizeLimit) {
+        if (!empty($this->fileSizeLimit) && $this->fileSize + $this->calculateDataSize($item->render()) >= $this->fileSizeLimit) {
             //file size limit is set and current counter has reached it.
             return false;
         }
@@ -192,7 +193,17 @@ abstract class AbstractSitemap implements SitemapInterface
      */
     protected function incrementSizeCounter($data)
     {
-        $this->fileSize += mb_strlen($data);
+        $this->fileSize += $this->calculateDataSize($data);
+    }
+
+    /**
+     * @param $data
+     *
+     * @return int
+     */
+    protected function calculateDataSize($data)
+    {
+        return mb_strlen($data);
     }
 
     /**
@@ -214,16 +225,14 @@ abstract class AbstractSitemap implements SitemapInterface
     }
 
     /**
-     * Write data portion.
-     *
      * @param $data
      *
-     * @throws \Exception
+     * @throws NotOpenedSitemapException
      */
     protected function writeData($data)
     {
         if (!$this->isOpened()) {
-            throw new \Exception("Unable to add data to file, sitemap isn't opened.");
+            throw new NotOpenedSitemapException("Unable to add data to file.");
         }
 
         $this->incrementSizeCounter($data);
@@ -231,9 +240,7 @@ abstract class AbstractSitemap implements SitemapInterface
     }
 
     /**
-     * Write sitemap XML dclaration.
-     *
-     * @throws \Exception
+     * Write sitemap XML declaration.
      */
     protected function writeDeclaration()
     {
@@ -242,8 +249,6 @@ abstract class AbstractSitemap implements SitemapInterface
 
     /**
      * Write open root node tag.
-     *
-     * @throws \Exception
      */
     protected function openRootNode()
     {
@@ -252,8 +257,6 @@ abstract class AbstractSitemap implements SitemapInterface
 
     /**
      * Write close root node tag.
-     *
-     * @throws \Exception
      */
     protected function closeRootNode()
     {

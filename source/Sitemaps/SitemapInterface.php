@@ -2,6 +2,8 @@
 
 namespace Spiral\Sitemaps;
 
+use \Spiral\Sitemaps\Exceptions\AlreadyOpenedSitemapException;
+
 /**
  * @link https://www.sitemaps.org/ru/protocol.html
  */
@@ -9,6 +11,8 @@ interface SitemapInterface
 {
     /**
      * @param int $filesCountLimit
+     *
+     * @throws AlreadyOpenedSitemapException
      */
     public function setFilesCountLimit(int $filesCountLimit);
 
@@ -16,7 +20,8 @@ interface SitemapInterface
      * Set namespaces. File should not be opened by that time.
      *
      * @param array $namespaces
-     * @throws \LogicException
+     *
+     * @throws AlreadyOpenedSitemapException
      */
     public function setNamespaces(array $namespaces);
 
@@ -24,8 +29,6 @@ interface SitemapInterface
      * Open file.
      *
      * @param string $filename
-     *
-     * @throws \Exception
      */
     public function open(string $filename);
 

@@ -2,10 +2,14 @@
 
 namespace Spiral\Sitemaps\Sitemaps;
 
+use Spiral\Sitemaps\Exceptions\AlreadyOpenedSitemapException;
+use Spiral\Sitemaps\Exceptions\InvalidCompressionException;
 use Spiral\Sitemaps\ItemInterface;
 
 class Sitemap extends AbstractSitemap implements ItemInterface
 {
+    const ROOT_NODE_TAG = 'urlset';
+
     /**
      * File compression enabled?
      *
@@ -38,14 +42,11 @@ class Sitemap extends AbstractSitemap implements ItemInterface
     /**
      * {@inheritdoc}
      *
-     * @param string        $filename
      * @param int|bool|null $compression
-     *
-     * @throws \Exception
      */
     public function open(string $filename, $compression = null)
     {
-        $this->handleCompression($compression);
+        $this->setCompression($compression);
 
         if ($this->compressionEnabled()) {
             $filename .= '.gz';
@@ -60,10 +61,7 @@ class Sitemap extends AbstractSitemap implements ItemInterface
     public function setFileSizeLimit(int $fileSizeLimit)
     {
         if ($this->isOpened()) {
-            throw new \LogicException(sprintf(
-                'Unable to set files count limit "%s" - sitemap is already opened.',
-                $fileSizeLimit
-            ));
+            throw new AlreadyOpenedSitemapException(sprintf('Unable to set files count limit "%s".', $fileSizeLimit));
         }
 
         $this->fileSizeLimit = $fileSizeLimit;
@@ -94,17 +92,14 @@ class Sitemap extends AbstractSitemap implements ItemInterface
     /**
      * @param int|bool|null $compression
      */
-    protected function handleCompression($compression)
+    protected function setCompression($compression)
     {
         if ($compression === true) {
             $compression = 6;
         }
 
         if (!empty($compression) && ($compression < 1 || $compression > 9)) {
-            throw new \OutOfRangeException(sprintf(
-                'Unsupported compress value "%s". Valid values range is 1-9.',
-                $compression
-            ));
+            throw new InvalidCompressionException($compression);
         }
 
         $this->compression = $compression;

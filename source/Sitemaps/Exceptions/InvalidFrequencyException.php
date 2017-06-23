@@ -4,7 +4,7 @@ namespace Spiral\Sitemaps\Exceptions;
 
 use Spiral\Sitemaps\Items\PageItem;
 
-class InvalidFrequencyException extends \OutOfBoundsException
+class InvalidFrequencyException extends \UnexpectedValueException
 {
     public function __construct($frequency = "", $code = 0, \Throwable $previous = null)
     {
