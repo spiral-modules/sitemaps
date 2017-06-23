@@ -2,26 +2,27 @@
 
 namespace Spiral\Sitemaps;
 
-use InvalidArgumentException;
 use Spiral\Core\InjectableConfig;
+use Spiral\Sitemaps\Exceptions\UnknownSitemapException;
 
 class SitemapsConfig extends InjectableConfig
 {
-    const CONFIG = 'sitemaps';
+    const CONFIG = 'modules/sitemaps';
 
     protected $config = [
-        'sitemaps'  => [
+        'sitemaps' => [
             'sitemap' => [
-                'maxFiles'    => 50000,
+                'maxFiles'     => 50000,
                 //49.59mb actually - a little bit smaller than 50mb, enough to write closing tag
-                'maxFileSize' => 52000000,
+                'maxFileSize'  => 52000000,
+                'subDirectory' => 'sitemaps/',
+                'compression'  => true,
             ],
             'index'   => [
                 'maxFiles' => 500
             ],
         ],
-        'directory' => 'sitemaps/',
-        'aliases'   => [
+        'aliases'  => [
             'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"'           => ['default'],
             'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"' => ['image', 'images'],
             'xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"' => ['video', 'videos'],
@@ -53,7 +54,7 @@ class SitemapsConfig extends InjectableConfig
     }
 
     /**
-     * Max files allowed for wrapper.
+     * Max files allowed for sitemap.
      *
      * @param string $sitemap
      *
@@ -65,7 +66,7 @@ class SitemapsConfig extends InjectableConfig
             return $this->config['sitemaps'][$sitemap]['maxFiles'];
         }
 
-        throw new \InvalidArgumentException("Unsupported wrapper \"$sitemap\".");
+        throw new UnknownSitemapException($sitemap);
     }
 
     /**
@@ -81,7 +82,7 @@ class SitemapsConfig extends InjectableConfig
             return $this->config['sitemaps'][$sitemap]['maxFileSize'];
         }
 
-        throw new \InvalidArgumentException("Unsupported wrapper \"$sitemap\".");
+        throw new UnknownSitemapException($sitemap);
     }
 
     /**
@@ -91,6 +92,16 @@ class SitemapsConfig extends InjectableConfig
      */
     public function subDirectory(): string
     {
-        return $this->config['directory'];
+        return $this->config['sitemaps']['sitemap']['subDirectory'];
+    }
+
+    /**
+     * Compression rate for sitemap file.
+     *
+     * @return mixed
+     */
+    public function compression()
+    {
+        return $this->config['sitemaps']['sitemap']['compression'];
     }
 }

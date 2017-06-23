@@ -64,64 +64,8 @@ class VideoItem implements ItemInterface
      */
     public function render(): string
     {
-        $item = $this->loc() . $this->caption() . $this->geoLocation() . $this->title() . $this->license();
+        $data = '';
 
-        return "<image:image>$item</image:image>";
-    }
-
-    /**
-     * @return string
-     */
-    private function loc(): string
-    {
-        return "<image:loc>{$this->loc}</image:loc>";
-    }
-
-    /**
-     * @return string
-     */
-    private function caption(): string
-    {
-        if (!empty($this->caption)) {
-            return "<image:caption>{$this->caption}</image:caption>";
-        }
-
-        return '';
-    }
-
-    /**
-     * @return string
-     */
-    private function geoLocation(): string
-    {
-        if (!empty($this->geoLocation)) {
-            return "<image:geo_location>{$this->geoLocation}</image:geo_location>";
-        }
-
-        return '';
-    }
-
-    /**
-     * @return string
-     */
-    private function title(): string
-    {
-        if (!empty($this->title)) {
-            return "<image:title>{$this->title}</image:title>";
-        }
-
-        return '';
-    }
-
-    /**
-     * @return string
-     */
-    private function license(): string
-    {
-        if (!empty($this->license)) {
-            return "<image:license>{$this->license}</image:license>";
-        }
-
-        return '';
+        return "<video:video>$data</video:video>";
     }
 }

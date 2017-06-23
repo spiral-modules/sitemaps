@@ -14,9 +14,6 @@ class Sitemaps
     /** @var string */
     protected $filename;
 
-    /** @var int|null */
-    protected $compression;
-
     /** @var string */
     protected $directory;
 
@@ -80,11 +77,10 @@ class Sitemaps
     /**
      * Open sitemap.
      *
-     * @param string        $filename
-     * @param string        $directory
-     * @param int|bool|null $compression
+     * @param string      $filename
+     * @param string|null $directory
      */
-    public function open(string $filename, string $directory, $compression = null)
+    public function open(string $filename, string $directory = null)
     {
         if (!empty($this->currentSitemap)) {
             //already opened.
@@ -92,7 +88,6 @@ class Sitemaps
         }
 
         $this->filename = $filename;
-        $this->compression = $compression;
         $this->directory = $directory;
 
         $this->newSitemap();
@@ -178,7 +173,7 @@ class Sitemaps
         }
 
         $this->currentSitemap = $this->makeSitemap();
-        $this->currentSitemap->open($this->directory . $this->filename, $this->compression);
+        $this->currentSitemap->open($this->directory . $this->filename, $this->config->compression());
     }
 
     /**
@@ -224,9 +219,12 @@ class Sitemaps
     protected function storeCurrentSitemap()
     {
         if (!empty($this->currentSitemap)) {
-            $destinationFilename = $this->destinationFilename($this->filename);
+            $subDirectory = $this->config->subDirectory();
+            if (!empty($subDirectory)) {
+                $this->files->ensureDirectory($this->directory . $subDirectory);
+            }
 
-            $this->files->ensureDirectory($this->directory . $this->config->subDirectory());
+            $destinationFilename = $this->destinationFilename($this->filename);
             $this->files->move($this->filename, $this->directory . $destinationFilename);
 
             $this->sitemaps[$destinationFilename] = $this->currentSitemap;

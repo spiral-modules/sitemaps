@@ -2,6 +2,8 @@
 
 namespace Spiral\Sitemaps\Items;
 
+use Spiral\Sitemaps\Exceptions\InvalidPriorityException;
+use Spiral\Sitemaps\Exceptions\InvalidFrequencyException;
 use Spiral\Sitemaps\ItemInterface;
 
 /**
@@ -26,7 +28,7 @@ class PageItem implements ItemInterface
     private $images = [];
 
     /** @var AlterLangItem[] */
-    private $alterLangs;
+    private $alterLangs = [];
 
     /** @var string */
     private $loc;
@@ -55,17 +57,11 @@ class PageItem implements ItemInterface
         float $priority = null
     ) {
         if (!empty($changefreq) && !in_array($changefreq, self::FREQUENCIES)) {
-            throw new \OutOfRangeException(sprintf(
-                'Unsupported sitemap frequency "%s".',
-                $changefreq
-            ));
+            throw new InvalidFrequencyException($changefreq);
         }
 
         if (!empty($priority) && ($priority < 0 || $priority > 1)) {
-            throw new \OutOfRangeException(sprintf(
-                'Unsupported sitemap priority "%s". Valid values range is 0.0-1.0.',
-                $priority
-            ));
+            throw new InvalidPriorityException($priority);
         }
 
         $this->loc = $loc;
@@ -82,16 +78,6 @@ class PageItem implements ItemInterface
     public function addImage(ImageItem $image)
     {
         $this->images[] = $image;
-    }
-
-    /**
-     * Add image item.
-     *
-     * @param VideoItem $video
-     */
-    public function addVideo(VideoItem $video)
-    {
-        $this->video = $video;
     }
 
     /**

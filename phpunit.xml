@@ -14,7 +14,7 @@
          syntaxCheck="true">
 
     <testsuites>
-        <testsuite name="Spiral Navigation Builder module">
+        <testsuite name="Spiral Sitemaps Generator module">
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>
@@ -22,9 +22,6 @@
     <filter>
         <whitelist>
             <directory>./source/Sitemaps/</directory>
-            <exclude>
-                <directory suffix=".php">./source/Sitemaps/Controllers/</directory>
-            </exclude>
         </whitelist>
     </filter>
 </phpunit>

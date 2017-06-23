@@ -28,12 +28,12 @@ class Namespaces
     public function get(array $namespaces): array
     {
         $output = [];
-        $namespaces[] = 'default';
+        $namespaces['default'] = 'default';
 
         foreach ($namespaces as $namespace) {
-            $output[] = $this->config->getNamespace($namespace);
+            $output[$namespace] = $this->config->getNamespace($namespace);
         }
 
-        return $output;
+        return array_unique($output);
     }
 }
