@@ -120,16 +120,13 @@ abstract class AbstractSitemap implements SitemapInterface
      */
     public function open(string $filename)
     {
-        if ($this->isOpened()) {
-            //already opened.
-            return;
+        if (!$this->isOpened()) {
+            $this->filename = $filename;
+
+            $this->openHandler();
+            $this->writeDeclaration();
+            $this->openRootNode();
         }
-
-        $this->filename = $filename;
-
-        $this->openHandler();
-        $this->writeDeclaration();
-        $this->openRootNode();
     }
 
     /**

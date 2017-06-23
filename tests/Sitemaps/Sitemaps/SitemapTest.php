@@ -3,13 +3,12 @@
 namespace Spiral\Tests\Sitemaps\Sitemaps;
 
 use Spiral\Sitemaps\Items\PageItem;
-use Spiral\Sitemaps\Sitemaps\IndexSitemap;
 use Spiral\Sitemaps\Sitemaps\Sitemap;
 use Spiral\Tests\BaseTest;
 
 class SitemapTest extends BaseTest
 {
-    public function testRender()
+    public function testSitemap()
     {
         $filename = $this->app->directory('runtime') . 'sitemap.xml';
 
@@ -30,29 +29,32 @@ class SitemapTest extends BaseTest
         $this->assertContains($item->render(), $content);
     }
 
-//    public function testRenderForIndex()
-//    {
-//        $filename = $this->app->directory('runtime') . 'sitemap.xml';
-//
-//        $sitemap = new Sitemap();
-//        $sitemap->open($filename);
-//        $item = new PageItem('location.com');
-//        $sitemap->addItem($item);
-//        $sitemap->close();
-//
-//        $this->assertFileExists($filename);
-//
-//        $render = $sitemap->render();
-//
-//        $this->assertNotContains(Sitemap::DECLARATION, $render);
-//        $this->assertNotContains(Sitemap::DEFAULT_NS, $render);
-//
-//        //todo render data
-//
-//        $this->assertContains('<' . IndexSitemap::ROOT_NODE_TAG, $render);
-//        $this->assertContains('</' . IndexSitemap::ROOT_NODE_TAG . '>', $render);
-//        $this->assertContains($item->render(), $render);
-//    }
+    public function testRender()
+    {
+        $filename = $this->app->directory('runtime') . 'sitemap.xml';
+
+        $sitemap = new Sitemap();
+        $sitemap->open($filename);
+        $item = new PageItem('location.com');
+        $sitemap->addItem($item);
+        $sitemap->close();
+
+        $this->assertFileExists($filename);
+
+        $render = $sitemap->render();
+
+        $this->assertNotContains(Sitemap::DECLARATION, $render);
+        $this->assertNotContains(Sitemap::DEFAULT_NS, $render);
+        $this->assertNotContains('<' . Sitemap::ROOT_NODE_TAG, $render);
+        $this->assertNotContains('</' . Sitemap::ROOT_NODE_TAG . '>', $render);
+
+        $this->assertContains('<loc>' . $filename . '</loc>', $render);
+        $this->assertContains('<lastmod>', $render);
+        $this->assertContains('</lastmod>', $render);
+        $this->assertContains('<sitemap>', $render);
+        $this->assertContains('</sitemap>', $render);
+        $this->assertNotContains($item->render(), $render);
+    }
 
     public function testSizeOverflow()
     {
@@ -122,10 +124,88 @@ class SitemapTest extends BaseTest
         $this->assertNotContains($item4->render(), $content);
     }
 
-    /**
-     * @expectedException
-     */
+    public function testCompression()
+    {
+        $filename1 = $this->app->directory('runtime') . 'sitemap.xml';
+        $filename2 = $this->app->directory('runtime') . 'sitemap2.xml';
+        $item = new PageItem('location.com');
+
+        $sitemap = new Sitemap();
+        $sitemap->open($filename1, true);
+        $sitemap->addItem($item);
+        $sitemap->close();
+
+        $sitemap2 = new Sitemap();
+        $sitemap2->open($filename2);
+        $sitemap2->addItem($item);
+        $sitemap2->close();
+
+        $this->assertFileNotExists($filename1);
+        $this->assertFileExists($filename1 . '.gz');
+
+        $this->assertFileExists($filename2);
+        $this->assertFileNotExists($filename2 . '.gz');
+
+        $content1 = gzdecode(file_get_contents($filename1 . '.gz'));
+        $content2 = file_get_contents($filename2);
+
+        $this->assertEquals($content1, $content2);
+    }
+
     public function testSetters()
+    {
+        $filename1 = $this->app->directory('runtime') . 'sitemap.xml';
+        $filename2 = $this->app->directory('runtime') . 'sitemap2.xml';
+        $item = new PageItem('location.com');
+
+        $sitemap = new Sitemap(['video'], 500, 500);
+        $sitemap->open($filename1);
+        $sitemap->addItem($item);
+        $sitemap->close();
+
+        $sitemap2 = new Sitemap();
+        $sitemap2->setNamespaces(['video']);
+        $sitemap2->setFilesCountLimit(500);
+        $sitemap2->setFileSizeLimit(500);
+
+        $sitemap2->open($filename2);
+        $sitemap2->addItem($item);
+        $sitemap2->close();
+
+        $this->assertFileExists($filename1);
+        $this->assertFileExists($filename2);
+
+        $content1 = file_get_contents($filename1);
+        $content2 = file_get_contents($filename2);
+
+        $this->assertEquals($content1, $content2);
+    }
+
+    /**
+     * @expectedException \Spiral\Sitemaps\Exceptions\NotOpenedSitemapException
+     */
+    public function testShouldOpenFirst()
+    {
+        $sitemap = new Sitemap();
+        $item = new PageItem('location.com');
+        $sitemap->addItem($item);
+    }
+
+    /**
+     * @expectedException \Spiral\Sitemaps\Exceptions\InvalidCompressionException
+     */
+    public function testFailedSetCompression()
+    {
+        $filename = $this->app->directory('runtime') . 'sitemap.xml';
+
+        $sitemap = new Sitemap();
+        $sitemap->open($filename, 10);
+    }
+
+    /**
+     * @expectedException \Spiral\Sitemaps\Exceptions\AlreadyOpenedSitemapException
+     */
+    public function testFailedSetFilesCountLimit()
     {
         $filename = $this->app->directory('runtime') . 'sitemap.xml';
 
@@ -135,8 +215,29 @@ class SitemapTest extends BaseTest
         $sitemap->setFilesCountLimit(10);
     }
 
-    /*
-     * 4 test setters after opening
-     * 5 test compression
+    /**
+     * @expectedException \Spiral\Sitemaps\Exceptions\AlreadyOpenedSitemapException
      */
+    public function testFailedSetFileSizeLimit()
+    {
+        $filename = $this->app->directory('runtime') . 'sitemap.xml';
+
+        $sitemap = new Sitemap();
+        $sitemap->open($filename);
+
+        $sitemap->setFileSizeLimit(10);
+    }
+
+    /**
+     * @expectedException \Spiral\Sitemaps\Exceptions\AlreadyOpenedSitemapException
+     */
+    public function testFailedSetNamespaces()
+    {
+        $filename = $this->app->directory('runtime') . 'sitemap.xml';
+
+        $sitemap = new Sitemap();
+        $sitemap->open($filename);
+
+        $sitemap->setNamespaces(['namespace']);
+    }
 }

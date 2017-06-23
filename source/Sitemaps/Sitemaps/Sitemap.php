@@ -98,6 +98,8 @@ class Sitemap extends AbstractSitemap implements ItemInterface
             $compression = 6;
         }
 
+        $compression = (int)$compression;
+
         if (!empty($compression) && ($compression < 1 || $compression > 9)) {
             throw new InvalidCompressionException($compression);
         }
