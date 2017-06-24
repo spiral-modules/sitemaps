@@ -53,20 +53,6 @@ abstract class AbstractSitemap implements SitemapInterface
     protected $filesCountLimit = null;
 
     /**
-     * Allowed sitemap file limit in bytes, if set.
-     *
-     * @var null|int
-     */
-    protected $fileSizeLimit = null;
-
-    /**
-     * File size counter.
-     *
-     * @var int
-     */
-    protected $fileSize = 0;
-
-    /**
      * Files amount counter.
      *
      * @var int
@@ -76,16 +62,11 @@ abstract class AbstractSitemap implements SitemapInterface
     /**
      * @param array    $namespaces
      * @param null|int $filesCountLimit
-     * @param null|int $fileSizeLimit
      */
-    public function __construct(
-        array $namespaces = [],
-        int $filesCountLimit = null,
-        int $fileSizeLimit = null
-    ) {
+    public function __construct(array $namespaces = [], int $filesCountLimit = null)
+    {
         $this->namespaces = $namespaces;
         $this->filesCountLimit = $filesCountLimit;
-        $this->fileSizeLimit = $fileSizeLimit;
     }
 
     /**
@@ -159,13 +140,7 @@ abstract class AbstractSitemap implements SitemapInterface
      */
     protected function add(ItemInterface $item): bool
     {
-        if (!empty($this->filesCountLimit) && $this->countItems >= $this->filesCountLimit) {
-            //files count limit is set and current counter has reached it.
-            return false;
-        }
-
-        if (!empty($this->fileSizeLimit) && $this->fileSize + $this->calculateDataSize($item->render()) >= $this->fileSizeLimit) {
-            //file size limit is set and current counter has reached it.
+        if ($this->isFilesCountLimitReached()) {
             return false;
         }
 
@@ -176,31 +151,21 @@ abstract class AbstractSitemap implements SitemapInterface
     }
 
     /**
+     * Files count limit is set and current counter has reached it.
+     *
+     * @return bool
+     */
+    protected function isFilesCountLimitReached(): bool
+    {
+        return !empty($this->filesCountLimit) && $this->countItems >= $this->filesCountLimit;
+    }
+
+    /**
      * Incrementing files count.
      */
     protected function incrementFilesCounter()
     {
         $this->countItems++;
-    }
-
-    /**
-     * Incrementing file size.
-     *
-     * @param $data
-     */
-    protected function incrementSizeCounter($data)
-    {
-        $this->fileSize += $this->calculateDataSize($data);
-    }
-
-    /**
-     * @param $data
-     *
-     * @return int
-     */
-    protected function calculateDataSize($data)
-    {
-        return mb_strlen($data);
     }
 
     /**
@@ -232,7 +197,6 @@ abstract class AbstractSitemap implements SitemapInterface
             throw new NotOpenedSitemapException("Unable to add data to file.");
         }
 
-        $this->incrementSizeCounter($data);
         $this->writeIntoHandler($data);
     }
 

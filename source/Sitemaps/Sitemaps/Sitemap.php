@@ -18,6 +18,31 @@ class Sitemap extends AbstractSitemap implements ItemInterface
     protected $compression = null;
 
     /**
+     * Allowed sitemap file limit in bytes, if set.
+     *
+     * @var null|int
+     */
+    protected $fileSizeLimit = null;
+
+    /**
+     * File size counter.
+     *
+     * @var int
+     */
+    protected $fileSize = 0;
+
+    /**
+     * {@inheritdoc}
+     * @param int|null $fileSizeLimit
+     */
+    public function __construct(array $namespaces = [], int $filesCountLimit = null, int $fileSizeLimit = null)
+    {
+        $this->fileSizeLimit = $fileSizeLimit;
+
+        parent::__construct($namespaces, $filesCountLimit);
+    }
+
+    /**
      * Add sitemap item.
      *
      * @param ItemInterface $item
@@ -115,6 +140,59 @@ class Sitemap extends AbstractSitemap implements ItemInterface
     protected function compressionEnabled(): bool
     {
         return (bool)$this->compression;
+    }
+
+    /**
+     * Files count limit is set and current counter has reached it.
+     *
+     * @param $data
+     * @return bool
+     */
+    protected function isFileSizeLimitReached($data): bool
+    {
+        return !empty($this->fileSizeLimit) && $this->fileSize + $this->calculateDataSize($data) >= $this->fileSizeLimit;
+    }
+
+    /**
+     * Incrementing file size.
+     *
+     * @param $data
+     */
+    protected function incrementSizeCounter($data)
+    {
+        $this->fileSize += $this->calculateDataSize($data);
+    }
+
+    /**
+     * @param $data
+     *
+     * @return int
+     */
+    protected function calculateDataSize($data)
+    {
+        return mb_strlen($data);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function writeData($data)
+    {
+        parent::writeData($data);
+
+        $this->incrementSizeCounter($data);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function add(ItemInterface $item): bool
+    {
+        if ($this->isFileSizeLimitReached($item->render())) {
+            return false;
+        }
+
+        return parent::add($item);
     }
 
     /**

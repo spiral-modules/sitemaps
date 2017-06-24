@@ -12,7 +12,35 @@ class IndexSitemapTest extends BaseTest
     public function testIndex()
     {
         $filename = $this->app->directory('runtime') . 'sitemap.xml';
+        $filename1 = $this->app->directory('runtime') . 'sitemap1.xml';
+        $filename2 = $this->app->directory('runtime') . 'sitemap2.xml';
+
+        $sitemap1 = new Sitemap();
+        $sitemap1->open($filename1);
+        $sitemap1->addItem(new PageItem('location.com1'));
+        $sitemap1->close();
+
+        $sitemap2 = new Sitemap();
+        $sitemap2->open($filename2);
+        $sitemap2->addItem(new PageItem('location.com2'));
+        $sitemap2->close();
+
+
         $index = new IndexSitemap();
+        $index->open($filename);
+        $index->addSitemap($sitemap1);
+        $index->addSitemap($sitemap2);
+        $index->close();
+
+        $this->assertFileExists($filename);
+
+        $content = file_get_contents($filename);
+        $this->assertContains(IndexSitemap::DECLARATION, $content);
+        $this->assertContains(IndexSitemap::DEFAULT_NS, $content);
+        $this->assertContains('<' . IndexSitemap::ROOT_NODE_TAG, $content);
+        $this->assertContains('</' . IndexSitemap::ROOT_NODE_TAG . '>', $content);
+        $this->assertContains($sitemap1->render(), $content);
+        $this->assertContains($sitemap2->render(), $content);
 
         /*
          * 1 test flow
@@ -22,54 +50,6 @@ class IndexSitemapTest extends BaseTest
          * 2 test open first
          * 2 test already opened setters
          */
-    }
-
-    public function testSitemap()
-    {
-        $filename = $this->app->directory('runtime') . 'sitemap.xml';
-
-        $sitemap = new Sitemap();
-        $sitemap->open($filename);
-        $item = new PageItem('location.com');
-        $sitemap->addItem($item);
-        $sitemap->close();
-
-        $this->assertFileExists($filename);
-
-        $content = file_get_contents($filename);
-
-        $this->assertContains(Sitemap::DECLARATION, $content);
-        $this->assertContains(Sitemap::DEFAULT_NS, $content);
-        $this->assertContains('<' . Sitemap::ROOT_NODE_TAG, $content);
-        $this->assertContains('</' . Sitemap::ROOT_NODE_TAG . '>', $content);
-        $this->assertContains($item->render(), $content);
-    }
-
-    public function testRender()
-    {
-        $filename = $this->app->directory('runtime') . 'sitemap.xml';
-
-        $sitemap = new Sitemap();
-        $sitemap->open($filename);
-        $item = new PageItem('location.com');
-        $sitemap->addItem($item);
-        $sitemap->close();
-
-        $this->assertFileExists($filename);
-
-        $render = $sitemap->render();
-
-        $this->assertNotContains(Sitemap::DECLARATION, $render);
-        $this->assertNotContains(Sitemap::DEFAULT_NS, $render);
-        $this->assertNotContains('<' . Sitemap::ROOT_NODE_TAG, $render);
-        $this->assertNotContains('</' . Sitemap::ROOT_NODE_TAG . '>', $render);
-
-        $this->assertContains('<loc>' . $filename . '</loc>', $render);
-        $this->assertContains('<lastmod>', $render);
-        $this->assertContains('</lastmod>', $render);
-        $this->assertContains('<sitemap>', $render);
-        $this->assertContains('</sitemap>', $render);
-        $this->assertNotContains($item->render(), $render);
     }
 
     public function testSizeOverflow()
