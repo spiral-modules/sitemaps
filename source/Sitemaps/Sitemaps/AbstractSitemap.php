@@ -4,6 +4,7 @@ namespace Spiral\Sitemaps\Sitemaps;
 
 use Spiral\Sitemaps\Exceptions\AlreadyOpenedSitemapException;
 use Spiral\Sitemaps\Exceptions\NotOpenedSitemapException;
+use Spiral\Sitemaps\Exceptions\OpenHandlerRuntimeException;
 use Spiral\Sitemaps\ItemInterface;
 use Spiral\Sitemaps\SitemapInterface;
 
@@ -71,6 +72,8 @@ abstract class AbstractSitemap implements SitemapInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @throws AlreadyOpenedSitemapException
      */
     public function setNamespaces(array $namespaces)
     {
@@ -83,6 +86,8 @@ abstract class AbstractSitemap implements SitemapInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @throws AlreadyOpenedSitemapException
      */
     public function setFilesCountLimit(int $filesCountLimit)
     {
@@ -95,9 +100,8 @@ abstract class AbstractSitemap implements SitemapInterface
 
     /**
      * {@inheritdoc}
-     */
-    /**
-     * @param string $filename
+     *
+     * @throws OpenHandlerRuntimeException
      */
     public function open(string $filename)
     {
@@ -105,8 +109,13 @@ abstract class AbstractSitemap implements SitemapInterface
             $this->filename = $filename;
 
             $this->openHandler();
+
+            if (!$this->isOpened()) {
+                throw new OpenHandlerRuntimeException('File handler opening operation failed.');
+            }
+
             $this->writeDeclaration();
-            $this->openRootNode();
+            $this->writeOpenRootNodeTag();
         }
     }
 
@@ -116,7 +125,7 @@ abstract class AbstractSitemap implements SitemapInterface
     public function close()
     {
         if ($this->isOpened()) {
-            $this->closeRootNode();
+            $this->writeCloseRootNodeTag();
             $this->closeHandler();
         }
 
@@ -142,6 +151,10 @@ abstract class AbstractSitemap implements SitemapInterface
     {
         if ($this->isFilesCountLimitReached()) {
             return false;
+        }
+
+        if (!$this->isOpened()) {
+            throw new NotOpenedSitemapException('Unable to add data to file.');
         }
 
         $this->incrementFilesCounter();
@@ -187,16 +200,12 @@ abstract class AbstractSitemap implements SitemapInterface
     }
 
     /**
-     * @param $data
+     * Write data portion.
      *
-     * @throws NotOpenedSitemapException
+     * @param $data
      */
     protected function writeData($data)
     {
-        if (!$this->isOpened()) {
-            throw new NotOpenedSitemapException("Unable to add data to file.");
-        }
-
         $this->writeIntoHandler($data);
     }
 
@@ -211,7 +220,7 @@ abstract class AbstractSitemap implements SitemapInterface
     /**
      * Write open root node tag.
      */
-    protected function openRootNode()
+    protected function writeOpenRootNodeTag()
     {
         $this->writeData(sprintf('<%s %s>', static::ROOT_NODE_TAG, $this->namespaces()));
     }
@@ -219,7 +228,7 @@ abstract class AbstractSitemap implements SitemapInterface
     /**
      * Write close root node tag.
      */
-    protected function closeRootNode()
+    protected function writeCloseRootNodeTag()
     {
         $this->writeData(sprintf('</%s>', static::ROOT_NODE_TAG));
     }

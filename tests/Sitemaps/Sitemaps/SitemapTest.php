@@ -158,17 +158,21 @@ class SitemapTest extends BaseTest
         $filename2 = $this->app->directory('runtime') . 'sitemap2.xml';
         $item = new PageItem('location.com');
 
-        $sitemap = new Sitemap(['video'], 500, 500);
+        $sitemap = new Sitemap(['video'], 2, 500);
         $sitemap->open($filename1);
+        $sitemap->addItem($item);
+        $sitemap->addItem($item);
         $sitemap->addItem($item);
         $sitemap->close();
 
         $sitemap2 = new Sitemap();
         $sitemap2->setNamespaces(['video']);
-        $sitemap2->setFilesCountLimit(500);
+        $sitemap2->setFilesCountLimit(2);
         $sitemap2->setFileSizeLimit(500);
 
         $sitemap2->open($filename2);
+        $sitemap2->addItem($item);
+        $sitemap2->addItem($item);
         $sitemap2->addItem($item);
         $sitemap2->close();
 

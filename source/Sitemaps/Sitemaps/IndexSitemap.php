@@ -9,12 +9,12 @@ class IndexSitemap extends AbstractSitemap
     /**
      * Add sitemap file.
      *
-     * @param Sitemap $item
+     * @param Sitemap $sitemap
      *
      * @return bool
      */
-    public function addSitemap(Sitemap $item)
+    public function addSitemap(Sitemap $sitemap)
     {
-        return $this->add($item);
+        return $this->add($sitemap);
     }
 }
