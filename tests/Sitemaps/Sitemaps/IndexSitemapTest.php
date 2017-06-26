@@ -120,9 +120,8 @@ class IndexSitemapTest extends BaseTest
         $this->assertEquals($content1, $content2);
     }
 
-    ///
     /**
-     * @expectedException \Spiral\Sitemaps\Exceptions\NotOpenedSitemapException
+     * @expectedException \Spiral\Sitemaps\Exceptions\SitemapLogicException
      */
     public function testShouldOpenFirst()
     {
@@ -138,7 +137,7 @@ class IndexSitemapTest extends BaseTest
     }
 
     /**
-     * @expectedException \Spiral\Sitemaps\Exceptions\AlreadyOpenedSitemapException
+     * @expectedException \Spiral\Sitemaps\Exceptions\SitemapLogicException
      */
     public function testFailedSetFilesCountLimit()
     {
@@ -157,7 +156,7 @@ class IndexSitemapTest extends BaseTest
     }
 
     /**
-     * @expectedException \Spiral\Sitemaps\Exceptions\AlreadyOpenedSitemapException
+     * @expectedException \Spiral\Sitemaps\Exceptions\SitemapLogicException
      */
     public function testFailedSetNamespaces()
     {

@@ -2,9 +2,8 @@
 
 namespace Spiral\Sitemaps\Sitemaps;
 
-use Spiral\Sitemaps\Exceptions\AlreadyOpenedSitemapException;
-use Spiral\Sitemaps\Exceptions\NotOpenedSitemapException;
-use Spiral\Sitemaps\Exceptions\OpenHandlerRuntimeException;
+use Spiral\Sitemaps\Exceptions\SitemapLogicException;
+use Spiral\Sitemaps\Exceptions\HandlerRuntimeException;
 use Spiral\Sitemaps\ItemInterface;
 use Spiral\Sitemaps\SitemapInterface;
 
@@ -73,12 +72,12 @@ abstract class AbstractSitemap implements SitemapInterface
     /**
      * {@inheritdoc}
      *
-     * @throws AlreadyOpenedSitemapException
+     * @throws SitemapLogicException
      */
     public function setNamespaces(array $namespaces)
     {
         if ($this->isOpened()) {
-            throw new AlreadyOpenedSitemapException('Unable to set namespaces.');
+            throw new SitemapLogicException('Unable to set namespaces. Sitemap is already opened.');
         }
 
         $this->namespaces = $namespaces;
@@ -87,12 +86,15 @@ abstract class AbstractSitemap implements SitemapInterface
     /**
      * {@inheritdoc}
      *
-     * @throws AlreadyOpenedSitemapException
+     * @throws SitemapLogicException
      */
     public function setFilesCountLimit(int $filesCountLimit)
     {
         if ($this->isOpened()) {
-            throw new AlreadyOpenedSitemapException(sprintf('Unable to set files count limit "%s".', $filesCountLimit));
+            throw new SitemapLogicException(sprintf(
+                'Unable to set files count limit "%s". Sitemap is already opened.',
+                $filesCountLimit
+            ));
         }
 
         $this->filesCountLimit = $filesCountLimit;
@@ -101,7 +103,7 @@ abstract class AbstractSitemap implements SitemapInterface
     /**
      * {@inheritdoc}
      *
-     * @throws OpenHandlerRuntimeException
+     * @throws HandlerRuntimeException
      */
     public function open(string $filename)
     {
@@ -111,7 +113,7 @@ abstract class AbstractSitemap implements SitemapInterface
             $this->openHandler();
 
             if (!$this->isOpened()) {
-                throw new OpenHandlerRuntimeException('File handler opening operation failed.');
+                throw new HandlerRuntimeException('File handler opening operation failed.');
             }
 
             $this->writeDeclaration();
@@ -154,7 +156,7 @@ abstract class AbstractSitemap implements SitemapInterface
         }
 
         if (!$this->isOpened()) {
-            throw new NotOpenedSitemapException('Unable to add data to file.');
+            throw new SitemapLogicException('Unable to add data to file. File should be opened first.');
         }
 
         $this->incrementFilesCounter();

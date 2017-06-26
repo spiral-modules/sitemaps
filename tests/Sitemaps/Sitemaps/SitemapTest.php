@@ -186,7 +186,7 @@ class SitemapTest extends BaseTest
     }
 
     /**
-     * @expectedException \Spiral\Sitemaps\Exceptions\NotOpenedSitemapException
+     * @expectedException \Spiral\Sitemaps\Exceptions\SitemapLogicException
      */
     public function testShouldOpenFirst()
     {
@@ -207,7 +207,7 @@ class SitemapTest extends BaseTest
     }
 
     /**
-     * @expectedException \Spiral\Sitemaps\Exceptions\AlreadyOpenedSitemapException
+     * @expectedException \Spiral\Sitemaps\Exceptions\SitemapLogicException
      */
     public function testFailedSetFilesCountLimit()
     {
@@ -220,7 +220,7 @@ class SitemapTest extends BaseTest
     }
 
     /**
-     * @expectedException \Spiral\Sitemaps\Exceptions\AlreadyOpenedSitemapException
+     * @expectedException \Spiral\Sitemaps\Exceptions\SitemapLogicException
      */
     public function testFailedSetFileSizeLimit()
     {
@@ -233,7 +233,7 @@ class SitemapTest extends BaseTest
     }
 
     /**
-     * @expectedException \Spiral\Sitemaps\Exceptions\AlreadyOpenedSitemapException
+     * @expectedException \Spiral\Sitemaps\Exceptions\SitemapLogicException
      */
     public function testFailedSetNamespaces()
     {
