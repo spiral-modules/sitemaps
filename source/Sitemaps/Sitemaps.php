@@ -3,6 +3,7 @@
 namespace Spiral\Sitemaps;
 
 use Spiral\Files\FileManager;
+use Spiral\Sitemaps\Exceptions\SitemapLogicException;
 use Spiral\Sitemaps\Sitemaps\IndexSitemap;
 use Spiral\Sitemaps\Sitemaps\Sitemap;
 
@@ -82,15 +83,12 @@ class Sitemaps
      */
     public function open(string $filename, string $directory = null)
     {
-        if (!empty($this->currentSitemap)) {
-            //already opened.
-            return;
+        if (empty($this->currentSitemap)) {
+            $this->filename = $filename;
+            $this->directory = $directory;
+
+            $this->newSitemap();
         }
-
-        $this->filename = $filename;
-        $this->directory = $directory;
-
-        $this->newSitemap();
     }
 
     /**
@@ -103,11 +101,11 @@ class Sitemaps
     public function addItem(ItemInterface $item)
     {
         if (empty($this->currentSitemap)) {
-            throw new \LogicException('Call "open" method first.');
+            throw new SitemapLogicException('Unable to add data to file. File should be opened first.');
         }
 
+        //Previous sitemap is full, create new.
         if (!$this->currentSitemap->addItem($item)) {
-            //Previous sitemap is full, create new.
             $this->newSitemap();
         }
 
