@@ -32,6 +32,13 @@ class Sitemap extends AbstractSitemap implements ItemInterface
     protected $fileSize = 0;
 
     /**
+     * Filename of current sitemap.
+     *
+     * @var null|string
+     */
+    protected $filename = null;
+
+    /**
      * {@inheritdoc}
      * @param int|null $fileSizeLimit
      */
@@ -71,6 +78,7 @@ class Sitemap extends AbstractSitemap implements ItemInterface
      */
     public function open(string $filename, $compression = null)
     {
+        $this->filename = $filename;
         $this->setCompression($compression);
 
         if ($this->compressionEnabled()) {
@@ -202,12 +210,12 @@ class Sitemap extends AbstractSitemap implements ItemInterface
     /**
      * {@inheritdoc}
      */
-    protected function openHandler()
+    protected function openHandler(string $filename)
     {
         if ($this->compressionEnabled()) {
-            $this->handler = gzopen($this->filename, 'wb' . $this->compression);
+            $this->handler = gzopen($filename, 'wb' . $this->compression);
         } else {
-            $this->handler = fopen($this->filename, 'wb');
+            $this->handler = fopen($filename, 'wb');
         }
     }
 

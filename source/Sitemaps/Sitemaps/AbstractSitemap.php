@@ -32,13 +32,6 @@ abstract class AbstractSitemap implements SitemapInterface
     protected $handler = null;
 
     /**
-     * Filename of current sitemap.
-     *
-     * @var null|string
-     */
-    protected $filename = null;
-
-    /**
      * Sitemap namespaces.
      *
      * @var array
@@ -108,9 +101,7 @@ abstract class AbstractSitemap implements SitemapInterface
     public function open(string $filename)
     {
         if (!$this->isOpened()) {
-            $this->filename = $filename;
-
-            $this->openHandler();
+            $this->openHandler($filename);
 
             if (!$this->isOpened()) {
                 throw new HandlerRuntimeException('File handler opening operation failed.');
@@ -195,10 +186,12 @@ abstract class AbstractSitemap implements SitemapInterface
 
     /**
      * Close file handler.
+     *
+     * @param string $filename
      */
-    protected function openHandler()
+    protected function openHandler(string $filename)
     {
-        $this->handler = fopen($this->filename, 'wb');
+        $this->handler = fopen($filename, 'wb');
     }
 
     /**
