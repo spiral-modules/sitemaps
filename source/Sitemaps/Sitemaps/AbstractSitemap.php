@@ -65,37 +65,6 @@ abstract class AbstractSitemap implements SitemapInterface
     /**
      * {@inheritdoc}
      *
-     * @throws SitemapLogicException
-     */
-    public function setNamespaces(array $namespaces)
-    {
-        if ($this->isOpened()) {
-            throw new SitemapLogicException('Unable to set namespaces. Sitemap is already opened.');
-        }
-
-        $this->namespaces = $namespaces;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @throws SitemapLogicException
-     */
-    public function setFilesCountLimit(int $filesCountLimit)
-    {
-        if ($this->isOpened()) {
-            throw new SitemapLogicException(sprintf(
-                'Unable to set files count limit "%s". Sitemap is already opened.',
-                $filesCountLimit
-            ));
-        }
-
-        $this->filesCountLimit = $filesCountLimit;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
      * @throws HandlerRuntimeException
      */
     public function open(string $filename)

@@ -8,18 +8,6 @@ namespace Spiral\Sitemaps;
 interface SitemapInterface
 {
     /**
-     * @param int $filesCountLimit
-     */
-    public function setFilesCountLimit(int $filesCountLimit);
-
-    /**
-     * Set namespaces. File should not be opened by that time.
-     *
-     * @param array $namespaces
-     */
-    public function setNamespaces(array $namespaces);
-
-    /**
      * Open file.
      *
      * @param string $filename

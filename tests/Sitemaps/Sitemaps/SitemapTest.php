@@ -60,8 +60,7 @@ class SitemapTest extends BaseTest
     {
         $filename = $this->app->directory('runtime') . 'sitemap.xml';
 
-        $sitemap = new Sitemap();
-        $sitemap->setFileSizeLimit(190);
+        $sitemap = new Sitemap([], null, 190);
         $sitemap->open($filename);
 
         $item1 = new PageItem('location.com1');
@@ -99,8 +98,7 @@ class SitemapTest extends BaseTest
     {
         $filename = $this->app->directory('runtime') . 'sitemap.xml';
 
-        $sitemap = new Sitemap();
-        $sitemap->setFilesCountLimit(3);
+        $sitemap = new Sitemap([], 3);
         $sitemap->open($filename);
 
         $item1 = new PageItem('location.com1');
@@ -152,39 +150,6 @@ class SitemapTest extends BaseTest
         $this->assertEquals($content1, $content2);
     }
 
-    public function testSetters()
-    {
-        $filename1 = $this->app->directory('runtime') . 'sitemap.xml';
-        $filename2 = $this->app->directory('runtime') . 'sitemap2.xml';
-        $item = new PageItem('location.com');
-
-        $sitemap = new Sitemap(['video'], 2, 500);
-        $sitemap->open($filename1);
-        $sitemap->addItem($item);
-        $sitemap->addItem($item);
-        $sitemap->addItem($item);
-        $sitemap->close();
-
-        $sitemap2 = new Sitemap();
-        $sitemap2->setNamespaces(['video']);
-        $sitemap2->setFilesCountLimit(2);
-        $sitemap2->setFileSizeLimit(500);
-
-        $sitemap2->open($filename2);
-        $sitemap2->addItem($item);
-        $sitemap2->addItem($item);
-        $sitemap2->addItem($item);
-        $sitemap2->close();
-
-        $this->assertFileExists($filename1);
-        $this->assertFileExists($filename2);
-
-        $content1 = file_get_contents($filename1);
-        $content2 = file_get_contents($filename2);
-
-        $this->assertEquals($content1, $content2);
-    }
-
     /**
      * @expectedException \Spiral\Sitemaps\Exceptions\SitemapLogicException
      */
@@ -204,44 +169,5 @@ class SitemapTest extends BaseTest
 
         $sitemap = new Sitemap();
         $sitemap->open($filename, 10);
-    }
-
-    /**
-     * @expectedException \Spiral\Sitemaps\Exceptions\SitemapLogicException
-     */
-    public function testFailedSetFilesCountLimit()
-    {
-        $filename = $this->app->directory('runtime') . 'sitemap.xml';
-
-        $sitemap = new Sitemap();
-        $sitemap->open($filename);
-
-        $sitemap->setFilesCountLimit(10);
-    }
-
-    /**
-     * @expectedException \Spiral\Sitemaps\Exceptions\SitemapLogicException
-     */
-    public function testFailedSetFileSizeLimit()
-    {
-        $filename = $this->app->directory('runtime') . 'sitemap.xml';
-
-        $sitemap = new Sitemap();
-        $sitemap->open($filename);
-
-        $sitemap->setFileSizeLimit(10);
-    }
-
-    /**
-     * @expectedException \Spiral\Sitemaps\Exceptions\SitemapLogicException
-     */
-    public function testFailedSetNamespaces()
-    {
-        $filename = $this->app->directory('runtime') . 'sitemap.xml';
-
-        $sitemap = new Sitemap();
-        $sitemap->open($filename);
-
-        $sitemap->setNamespaces(['namespace']);
     }
 }

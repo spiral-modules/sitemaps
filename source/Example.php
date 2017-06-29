@@ -11,48 +11,6 @@ use Spiral\Sitemaps\Sitemaps;
 use Spiral\Sitemaps\Sitemaps\Sitemap;
 use Spiral\Sitemaps\SitemapsConfig;
 
-class Example extends Service
-{
-    public function index(
-        IndexSitemapWrapper $wrapper,
-        SitemapWrapper $wrapper2,
-        SitemapsConfig $config,
-        FileManager $files
-    ) {
-        $sitemap = $this->sitemap($wrapper2, $config);
-        $filename = 'sitemap.xml';
-        $filename2 = 'sitemaps/1-sitemap.xml';
-        $files->move($filename, $filename2);
-
-        $index = new Sitemaps\IndexSitemap($wrapper, $config->maxFiles('index'));
-        $index->open('sitemap.xml');
-        $index->addSitemap($sitemap);
-        $index->close();
-    }
-
-    public function sitemaps(
-        SitemapsConfig $config,
-        FileManager $files,
-        IndexSitemapWrapper $wrapper,
-        SitemapWrapper $wrapper2
-    ) {
-        $sitemaps = new Sitemaps($config, $files);
-        $sitemaps->setIndexSitemapNamespaces([]);
-        $sitemaps->setSitemapNamespaces(['video']);
-
-        $sitemaps->open('sitemap.xml', '/');
-        $sitemaps->addItem(new PageItem('loc'));
-        $sitemaps->addItem(new PageItem('loc'));
-
-        //Need to separate sitemap items in several standalone files
-        $sitemaps->newSitemap();
-
-        $sitemaps->addItem(new PageItem('loc'));
-
-        $sitemaps->close();
-    }
-}
-
 class SitemapExample
 {
     /**
@@ -159,7 +117,7 @@ class IndexSitemapExample
         $index = new \Spiral\Sitemaps\Sitemaps\IndexSitemap([], $config->maxFiles('index'));
         //or
         $index = new \Spiral\Sitemaps\Sitemaps\IndexSitemap();
-        $index->setFilesCountLimit( $config->maxFiles('index'));
+        $index->setFilesCountLimit($config->maxFiles('index'));
 
         $index->open('sitemap.xml');
         $index->addSitemap(new \Spiral\Sitemaps\Sitemaps\Sitemap());
@@ -171,6 +129,5 @@ class SitemapsExample
 {
     public function __construct(Sitemaps $sitemaps)
     {
-//        $sitemaps->
     }
 }

@@ -3,7 +3,6 @@
 namespace Spiral\Sitemaps\Sitemaps;
 
 use Spiral\Sitemaps\Exceptions\InvalidCompressionException;
-use Spiral\Sitemaps\Exceptions\SitemapLogicException;
 use Spiral\Sitemaps\ItemInterface;
 
 class Sitemap extends AbstractSitemap implements ItemInterface
@@ -86,21 +85,6 @@ class Sitemap extends AbstractSitemap implements ItemInterface
         }
 
         parent::open($filename);
-    }
-
-    /**
-     * @param int $fileSizeLimit
-     */
-    public function setFileSizeLimit(int $fileSizeLimit)
-    {
-        if ($this->isOpened()) {
-            throw new SitemapLogicException(sprintf(
-                'Unable to set files count limit "%s". Sitemap is already opened.',
-                $fileSizeLimit
-            ));
-        }
-
-        $this->fileSizeLimit = $fileSizeLimit;
     }
 
     /**

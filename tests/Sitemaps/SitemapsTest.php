@@ -25,5 +25,7 @@ class SitemapsTest extends HttpTest
     {
         $sitemaps = $this->sitemaps();
         $this->assertTrue(true);
+
+//        $sitemaps->
     }
 }
