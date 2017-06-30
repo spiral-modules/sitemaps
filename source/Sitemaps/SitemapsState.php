@@ -17,7 +17,7 @@ class SitemapsState
      *
      * @var SitemapInterface
      */
-    protected $current;
+    protected $current = null;
 
     /**
      * Array of all sitemaps to go into the index sitemap.
@@ -38,5 +38,28 @@ class SitemapsState
         $this->filename = $filename;
         $this->directory = $directory;
         $this->namespaces = $namespaces;
+    }
+
+    public function sequencedFilename()
+    {
+        return (count($this->sitemaps) + 1) . '-' . basename($this->filename);
+    }
+
+    /**
+     * @return SitemapInterface|null
+     */
+    public function getSitemap()
+    {
+        return $this->current;
+    }
+
+    public function setSitemap(SitemapInterface $sitemap)
+    {
+        $this->current = $sitemap;
+    }
+
+    public function getNamespaces(): array
+    {
+        return $this->namespaces;
     }
 }

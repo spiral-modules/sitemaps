@@ -2,9 +2,9 @@
 
 return [
     'sitemaps'         => [
-        'maxFiles'     => 50000,
+        'itemsLimit'   => 50000,
         //49.59mb actually - a little bit smaller than 50mb, enough to write closing tag
-        'maxSize'      => 52000000,
+        'sizeLimit'    => 52000000,
         'compression'  => true,
         'subDirectory' => 'sitemaps/',
     ],

@@ -45,6 +45,7 @@ class Sitemaps implements SitemapWriterInterface
      */
     protected $namespaces = [];
 
+    /** @var null|SitemapsState */
     protected $state = null;
 
     /**
@@ -57,14 +58,83 @@ class Sitemaps implements SitemapWriterInterface
         $this->files = $files;
     }
 
-    /**
-     * Set sitemap namespaces.
-     *
-     * @param array $namespaces
-     */
-    public function setSitemapNamespaces(array $namespaces)
+    //Initiate process
+    public function _open(string $filename, string $directory = null, array $namespaces = [])
     {
-        $this->namespaces = $namespaces;
+        if (empty($this->state)) {
+            $this->state = new SitemapsState($filename, $directory, $namespaces);
+        }
+    }
+
+    //finalize process, returns sitemapindex or sitemap
+    public function _close()
+    {
+        //close and build index if needed
+    }
+
+    public function _makeSitemap(array $options)
+    {
+        //close previous if opened
+        //open new
+    }
+
+    public function _addItem(SitemapItemInterface $item)
+    {
+        if (empty($this->state)) {
+            throw new SitemapLogicException('Unable to add item. File should be opened first.');
+        }
+
+        $sitemap = $this->getSitemap();
+        if (!$sitemap->addItem($item)) {
+            //Previous sitemap is full, create new.
+            $this->_restartSitemap();
+        }
+
+        return $sitemap->addItem($item);
+    }
+
+    protected function _restartSitemap()
+    {
+        $sitemap = $this->state->getSitemap();
+        if (!empty($sitemap)) {
+            $sitemap->close();
+
+            //store
+            $subDirectory = $this->config->subDirectory();
+            if (!empty($subDirectory)) {
+                $this->files->ensureDirectory($this->directory . $subDirectory);
+            }
+
+            $destinationFilename = $this->destinationFilename($this->filename);
+            $this->files->move($this->filename, $this->directory . $destinationFilename);
+
+            $this->sitemaps[$destinationFilename] = $this->currentSitemap;
+        }
+
+        //by default: no namespaces and limits from config
+        $sitemap = $this->makeSitemap([], $this->config->itemsLimit(), $this->config->sizeLimit());
+        $this->state->setSitemap($sitemap);
+    }
+
+    /**
+     * @return SitemapInterface
+     */
+    protected function getSitemap(): SitemapInterface
+    {
+        $sitemap = $this->state->getSitemap();
+        if (empty($sitemap)) {
+            //by default: no namespaces and limits from config
+            $sitemap = $this->makeSitemap([], $this->config->itemsLimit(), $this->config->sizeLimit());
+            $this->state->setSitemap($sitemap);
+        }
+
+        return $sitemap;
+    }
+
+    //force closing
+    public function _destruct()
+    {
+
     }
 
     /**
@@ -84,6 +154,32 @@ class Sitemaps implements SitemapWriterInterface
 
             $this->openSitemap($this->namespaces);
         }
+    }
+
+    public function newSitemap(array $options)
+    {
+        $namespaces = $this->namespaces;
+        if (array_key_exists('namespaces', $options)) {
+            $namespaces[$options['namespaces']];
+        }
+
+        $compression = $this->config->compression();
+        if (array_key_exists('compression', $options)) {
+            $compression[$options['compression']];
+        }
+
+        $itemsLimit = $this->config->itemsLimit();
+        if (array_key_exists('itemsLimit', $options)) {
+            $itemsLimit[$options['itemsLimit']];
+        }
+
+        $sizeLimit = $this->config->sizeLimit();
+        if (array_key_exists('sizeLimit', $options)) {
+            $sizeLimit[$options['sizeLimit']];
+        }
+
+        $s = new Sitemap($namespaces, $itemsLimit, $sizeLimit);
+        $s->open($this->filename, $compression);
     }
 
     /**
@@ -141,7 +237,7 @@ class Sitemaps implements SitemapWriterInterface
             if (!$index->addSitemap($sitemap)) {
                 throw new \OverflowException(sprintf(
                     'Sitemap Index is full, "%s" limit is reached (%s actual sitemaps)',
-                    $this->config->maxFiles(),
+                    $this->config->itemsLimit(),
                     count($this->sitemaps)
                 ));
             }
@@ -161,8 +257,8 @@ class Sitemaps implements SitemapWriterInterface
     {
         $this->currentSitemap = $this->makeSitemap(
             $namespaces,
-            $this->config->maxFiles(),
-            $this->config->maxFileSize()
+            $this->config->itemsLimit(),
+            $this->config->sizeLimit()
         );
 
         $this->currentSitemap->open($this->directory . $this->filename, $this->config->compression());
@@ -226,7 +322,7 @@ class Sitemaps implements SitemapWriterInterface
      */
     private function makeIndexSitemap(): IndexSitemap
     {
-        return new IndexSitemap($this->config->maxFiles());
+        return new IndexSitemap($this->config->itemsLimit());
     }
 
     /**

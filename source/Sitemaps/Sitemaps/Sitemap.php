@@ -44,11 +44,7 @@ class Sitemap extends AbstractSitemap implements SitemapInterface
     }
 
     /**
-     * Add sitemap item.
-     *
-     * @param SitemapItemInterface $item
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function addItem(SitemapItemInterface $item): bool
     {
@@ -144,16 +140,12 @@ class Sitemap extends AbstractSitemap implements SitemapInterface
         }
 
         $size = $this->calculateDataSize($data);
-        if ($this->countSize + $size > $this->sizeLimit) {
-            if (empty($this->countItems)) {
-                //Can't add event one item
-                throw new DataOverflowException();
-            } else {
-                return true;
-            }
+        if ($size > $this->sizeLimit) {
+            //Item is enormous
+            throw new DataOverflowException();
         }
 
-        return false;
+        return $this->countSize + $size > $this->sizeLimit;
     }
 
     /**
