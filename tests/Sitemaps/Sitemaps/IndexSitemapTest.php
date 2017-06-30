@@ -64,7 +64,7 @@ class IndexSitemapTest extends BaseTest
         $sitemap3->addItem(new PageItem('location.com3'));
         $sitemap3->close();
 
-        $index = new IndexSitemap([], 2);
+        $index = new IndexSitemap(2);
         $index->open($filename);
 
         $this->assertTrue($index->addSitemap($sitemap1));

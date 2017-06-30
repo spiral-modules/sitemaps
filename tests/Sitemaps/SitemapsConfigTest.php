@@ -16,28 +16,6 @@ class SitemapsConfigTest extends BaseTest
     }
 
     /**
-     * Unknown sitemap type.
-     *
-     * @expectedException \Spiral\Sitemaps\Exceptions\UnknownSitemapException
-     */
-    public function testFailMaxFilesValues()
-    {
-        $config = $this->getConfig();
-        $config->maxFiles('some-sitemap');
-    }
-
-    /**
-     * Unknown sitemap type.
-     *
-     * @expectedException \Spiral\Sitemaps\Exceptions\UnknownSitemapException
-     */
-    public function testFailMaxFileSizeValues()
-    {
-        $config = $this->getConfig();
-        $config->maxFileSize('some-sitemap');
-    }
-
-    /**
      * Aliases.
      */
     public function testAliases()

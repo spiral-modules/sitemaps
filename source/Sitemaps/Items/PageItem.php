@@ -4,12 +4,9 @@ namespace Spiral\Sitemaps\Items;
 
 use Spiral\Sitemaps\Exceptions\InvalidPriorityException;
 use Spiral\Sitemaps\Exceptions\InvalidFrequencyException;
-use Spiral\Sitemaps\ItemInterface;
+use Spiral\Sitemaps\Interfaces\SitemapItemInterface;
 
-/**
- * @link https://support.google.com/webmasters/topic/6080646
- */
-class PageItem implements ItemInterface
+class PageItem implements SitemapItemInterface
 {
     /**
      * Allowed frequencies.

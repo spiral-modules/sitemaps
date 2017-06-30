@@ -4,10 +4,13 @@ namespace Spiral\Sitemaps;
 
 use Spiral\Files\FileManager;
 use Spiral\Sitemaps\Exceptions\SitemapLogicException;
+use Spiral\Sitemaps\Interfaces\SitemapInterface;
+use Spiral\Sitemaps\Interfaces\SitemapItemInterface;
+use Spiral\Sitemaps\Interfaces\SitemapWriterInterface;
 use Spiral\Sitemaps\Sitemaps\IndexSitemap;
 use Spiral\Sitemaps\Sitemaps\Sitemap;
 
-class Sitemaps implements SitemapInterface
+class Sitemaps implements SitemapWriterInterface
 {
     /** @var SitemapsConfig */
     protected $config;
@@ -20,9 +23,6 @@ class Sitemaps implements SitemapInterface
 
     /** @var FileManager */
     protected $files;
-
-    /** @var bool */
-    protected $isOpened = false;
 
     /**
      * Current pages sitemap.
@@ -43,10 +43,9 @@ class Sitemaps implements SitemapInterface
      *
      * @var array
      */
-    protected $namespaces = [
-        'sitemap' => [],
-        'index'   => []
-    ];
+    protected $namespaces = [];
+
+    protected $state = null;
 
     /**
      * @param SitemapsConfig $config
@@ -65,17 +64,7 @@ class Sitemaps implements SitemapInterface
      */
     public function setSitemapNamespaces(array $namespaces)
     {
-        $this->namespaces['sitemap'] = $namespaces;
-    }
-
-    /**
-     * Set index sitemap namespaces.
-     *
-     * @param array $namespaces
-     */
-    public function setIndexSitemapNamespaces(array $namespaces)
-    {
-        $this->namespaces['index'] = $namespaces;
+        $this->namespaces = $namespaces;
     }
 
     /**
@@ -83,28 +72,30 @@ class Sitemaps implements SitemapInterface
      *
      * @param string      $filename
      * @param string|null $directory
+     * @param array       $namespaces
      */
-    public function open(string $filename, string $directory = null)
+    public function open(string $filename, string $directory = null, array $namespaces = [])
     {
-        if (empty($this->isOpened)) {
-            $this->isOpened = true;
+        if (empty($this->state)) {
+            $this->state = new SitemapsState($filename, $directory, $namespaces);
+
             $this->filename = $filename;
             $this->directory = $directory;
 
-            $this->openSitemap($this->namespaces['sitemap']);
+            $this->openSitemap($this->namespaces);
         }
     }
 
     /**
      * Add item to sitemap.
      *
-     * @param ItemInterface $item
+     * @param SitemapItemInterface $item
      *
      * @return bool
      */
-    public function addItem(ItemInterface $item)
+    public function addItem(SitemapItemInterface $item)
     {
-        if (empty($this->isOpened)) {
+        if (empty($this->currentSitemap)) {
             throw new SitemapLogicException('Unable to add item. File should be opened first.');
         }
 
@@ -119,8 +110,7 @@ class Sitemaps implements SitemapInterface
     /**
      * Close sitemap.
      *
-     * @return null|SitemapInterface
-     * @throws \Exception
+     * @return IndexSitemap|Sitemap
      */
     public function close()
     {
@@ -151,7 +141,7 @@ class Sitemaps implements SitemapInterface
             if (!$index->addSitemap($sitemap)) {
                 throw new \OverflowException(sprintf(
                     'Sitemap Index is full, "%s" limit is reached (%s actual sitemaps)',
-                    $this->config->maxFiles('index'),
+                    $this->config->maxFiles(),
                     count($this->sitemaps)
                 ));
             }
@@ -171,8 +161,8 @@ class Sitemaps implements SitemapInterface
     {
         $this->currentSitemap = $this->makeSitemap(
             $namespaces,
-            $this->config->maxFiles('sitemap'),
-            $this->config->maxFileSize('sitemap')
+            $this->config->maxFiles(),
+            $this->config->maxFileSize()
         );
 
         $this->currentSitemap->open($this->directory . $this->filename, $this->config->compression());
@@ -194,7 +184,7 @@ class Sitemaps implements SitemapInterface
     private function restartSitemap()
     {
         $this->storeSitemap();
-        $this->openSitemap($this->namespaces['sitemap']);
+        $this->openSitemap($this->namespaces);
     }
 
     /**
@@ -212,7 +202,7 @@ class Sitemaps implements SitemapInterface
     public function startSitemap(array $namespaces = null)
     {
         $this->storeSitemap();
-        $this->openSitemap(is_array($namespaces) ? $namespaces : $this->namespaces['sitemap']);
+        $this->openSitemap(is_array($namespaces) ? $namespaces : $this->namespaces);
     }
 
     /**
@@ -222,7 +212,7 @@ class Sitemaps implements SitemapInterface
      * @param int   $filesCountLimit
      * @param int   $fileSizeLimit
      *
-     * @return \Spiral\Sitemaps\SitemapInterface
+     * @return SitemapInterface
      */
     private function makeSitemap(array $namespaces, int $filesCountLimit, int $fileSizeLimit): SitemapInterface
     {
@@ -236,10 +226,7 @@ class Sitemaps implements SitemapInterface
      */
     private function makeIndexSitemap(): IndexSitemap
     {
-        return new IndexSitemap(
-            $this->namespaces['index'],
-            $this->config->maxFiles('index')
-        );
+        return new IndexSitemap($this->config->maxFiles());
     }
 
     /**

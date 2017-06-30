@@ -37,14 +37,14 @@ class SitemapExample
                 'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"',
                 'xmlns:xhtml="http://www.w3.org/1999/xhtml"'
             ],
-            $config->maxFiles('sitemap'),
-            $config->maxFileSize('sitemap')
+            $config->maxFiles(),
+            $config->maxFileSize()
         );
 
         //Or, just set parameters before opening sitemap
         $sitemap = new Sitemap();
-        $sitemap->setFilesCountLimit($config->maxFiles('sitemap'));
-        $sitemap->setFileSizeLimit($config->maxFileSize('sitemap'));
+        $sitemap->setFilesCountLimit($config->maxFiles());
+        $sitemap->setFileSizeLimit($config->maxFileSize());
         $sitemap->setNamespaces([
             'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"',
             'xmlns:xhtml="http://www.w3.org/1999/xhtml"'
@@ -78,8 +78,8 @@ class SitemapExample
         //optional parameters, default namespace will be added anyway
         $sitemap = new Sitemap(
             ['video', 'image', 'alterlang'],
-            $config->maxFiles('sitemap'),
-            $config->maxFileSize('sitemap')
+            $config->maxFiles(),
+            $config->maxFileSize()
         );
 
         $sitemap->open('sitemap.xml', 8);
@@ -99,7 +99,7 @@ class IndexSitemapExample
     public function byContainer(Sitemaps\IndexSitemap $index, SitemapsConfig $config)
     {
         //optional parameters, default namespace will be added anyway
-        $index->setFilesCountLimit($config->maxFiles('index'));
+        $index->setFilesCountLimit($config->maxFiles());
         $index->setNamespaces(['video', 'image', 'xmlns=""']);
 
         $index->open('sitemap.xml');
@@ -114,10 +114,10 @@ class IndexSitemapExample
      */
     public function byConstructing(SitemapsConfig $config)
     {
-        $index = new \Spiral\Sitemaps\Sitemaps\IndexSitemap([], $config->maxFiles('index'));
+        $index = new \Spiral\Sitemaps\Sitemaps\IndexSitemap([], $config->maxFiles());
         //or
         $index = new \Spiral\Sitemaps\Sitemaps\IndexSitemap();
-        $index->setFilesCountLimit($config->maxFiles('index'));
+        $index->setFilesCountLimit($config->maxFiles());
 
         $index->open('sitemap.xml');
         $index->addSitemap(new \Spiral\Sitemaps\Sitemaps\Sitemap());

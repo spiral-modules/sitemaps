@@ -10,19 +10,14 @@ class SitemapsConfig extends InjectableConfig
     const CONFIG = 'modules/sitemaps';
 
     protected $config = [
-        'sitemaps' => [
-            'sitemap' => [
-                'maxFiles'     => 50000,
-                //49.59mb actually - a little bit smaller than 50mb, enough to write closing tag
-                'maxFileSize'  => 52000000,
-                'subDirectory' => 'sitemaps/',
-                'compression'  => true,
-            ],
-            'index'   => [
-                'maxFiles' => 500
-            ],
+        'sitemaps'         => [
+            'maxFiles'     => 50000,
+            //49.59mb actually - a little bit smaller than 50mb, enough to write closing tag
+            'maxSize'      => 52000000,
+            'compression'  => true,
+            'subDirectory' => 'sitemaps/',
         ],
-        'aliases'  => [
+        'namespaceAliases' => [
             'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"'           => ['default'],
             'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"' => ['image', 'images'],
             'xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"' => ['video', 'videos'],
@@ -44,7 +39,7 @@ class SitemapsConfig extends InjectableConfig
      */
     public function getNamespace(string $alias): string
     {
-        foreach ($this->config['aliases'] as $namespace => $aliases) {
+        foreach ($this->config['namespaceAliases'] as $namespace => $aliases) {
             if (in_array($alias, $aliases)) {
                 return $namespace;
             }
@@ -56,33 +51,21 @@ class SitemapsConfig extends InjectableConfig
     /**
      * Max files allowed for sitemap.
      *
-     * @param string $sitemap
-     *
      * @return int
      */
-    public function maxFiles(string $sitemap): int
+    public function maxFiles(): int
     {
-        if (isset($this->config['sitemaps'][$sitemap]['maxFiles'])) {
-            return $this->config['sitemaps'][$sitemap]['maxFiles'];
-        }
-
-        throw new UnknownSitemapException($sitemap);
+        return $this->config['sitemaps']['maxFiles'];
     }
 
     /**
      * Max file size allowed for sitemap file.
      *
-     * @param string $sitemap
-     *
      * @return int
      */
-    public function maxFileSize(string $sitemap): int
+    public function maxFileSize(): int
     {
-        if (isset($this->config['sitemaps'][$sitemap]['maxFileSize'])) {
-            return $this->config['sitemaps'][$sitemap]['maxFileSize'];
-        }
-
-        throw new UnknownSitemapException($sitemap);
+        return $this->config['sitemaps']['maxSize'];
     }
 
     /**
@@ -92,7 +75,7 @@ class SitemapsConfig extends InjectableConfig
      */
     public function subDirectory(): string
     {
-        return $this->config['sitemaps']['sitemap']['subDirectory'];
+        return $this->config['sitemaps']['subDirectory'];
     }
 
     /**
@@ -102,6 +85,6 @@ class SitemapsConfig extends InjectableConfig
      */
     public function compression()
     {
-        return $this->config['sitemaps']['sitemap']['compression'];
+        return $this->config['sitemaps']['compression'];
     }
 }

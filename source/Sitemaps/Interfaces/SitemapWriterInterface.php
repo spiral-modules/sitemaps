@@ -1,11 +1,14 @@
 <?php
 
-namespace Spiral\Sitemaps;
+namespace Spiral\Sitemaps\Interfaces;
 
 /**
- * @link https://www.sitemaps.org/ru/protocol.html
+ * Sitemap file writer, can open and close file.
+ * Interface SitemapWriterInterface
+ *
+ * @package Spiral\Sitemaps\Interfaces
  */
-interface SitemapInterface
+interface SitemapWriterInterface
 {
     /**
      * Open file.

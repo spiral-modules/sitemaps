@@ -2,14 +2,13 @@
 
 namespace Spiral\Sitemaps\Items;
 
-use Spiral\Sitemaps\ItemInterface;
+use Spiral\Sitemaps\Interfaces\SitemapItemInterface;
 
 /**
  * todo finish
  *
- * @link https://developers.google.com/webmasters/videosearch/sitemaps
  */
-class VideoItem implements ItemInterface
+class VideoItem implements SitemapItemInterface
 {
     /**
      * VideoItem constructor.

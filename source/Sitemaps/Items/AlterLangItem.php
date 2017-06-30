@@ -2,12 +2,9 @@
 
 namespace Spiral\Sitemaps\Items;
 
-use Spiral\Sitemaps\ItemInterface;
+use Spiral\Sitemaps\Interfaces\SitemapItemInterface;
 
-/**
- * @link https://support.google.com/webmasters/answer/2620865
- */
-class AlterLangItem implements ItemInterface
+class AlterLangItem implements SitemapItemInterface
 {
     /** @var string */
     private $hreflang;
@@ -16,7 +13,7 @@ class AlterLangItem implements ItemInterface
     private $href;
 
     /**
-     * ImageItem constructor.
+     * AlterLangItem constructor.
      *
      * @param string $hreflang
      * @param string $href

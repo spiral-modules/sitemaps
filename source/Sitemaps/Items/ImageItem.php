@@ -2,12 +2,9 @@
 
 namespace Spiral\Sitemaps\Items;
 
-use Spiral\Sitemaps\ItemInterface;
+use Spiral\Sitemaps\Interfaces\SitemapItemInterface;
 
-/**
- * @link https://support.google.com/webmasters/answer/178636
- */
-class ImageItem implements ItemInterface
+class ImageItem implements SitemapItemInterface
 {
     /** @var string */
     private $loc;

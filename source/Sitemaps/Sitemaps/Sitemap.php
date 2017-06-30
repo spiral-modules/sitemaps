@@ -2,10 +2,12 @@
 
 namespace Spiral\Sitemaps\Sitemaps;
 
+use Spiral\Sitemaps\Exceptions\DataOverflowException;
 use Spiral\Sitemaps\Exceptions\InvalidCompressionException;
-use Spiral\Sitemaps\ItemInterface;
+use Spiral\Sitemaps\Interfaces\SitemapInterface;
+use Spiral\Sitemaps\Interfaces\SitemapItemInterface;
 
-class Sitemap extends AbstractSitemap implements ItemInterface
+class Sitemap extends AbstractSitemap implements SitemapInterface
 {
     const ROOT_NODE_TAG = 'urlset';
 
@@ -21,41 +23,34 @@ class Sitemap extends AbstractSitemap implements ItemInterface
      *
      * @var null|int
      */
-    protected $fileSizeLimit = null;
+    protected $sizeLimit = null;
 
     /**
      * File size counter.
      *
      * @var int
      */
-    protected $fileSize = 0;
-
-    /**
-     * Filename of current sitemap.
-     *
-     * @var null|string
-     */
-    protected $filename = null;
+    protected $countSize = 0;
 
     /**
      * {@inheritdoc}
-     * @param int|null $fileSizeLimit
+     * @param int|null $sizeLimit
      */
-    public function __construct(array $namespaces = [], int $filesCountLimit = null, int $fileSizeLimit = null)
+    public function __construct(array $namespaces = [], int $itemsLimit = null, int $sizeLimit = null)
     {
-        $this->fileSizeLimit = $fileSizeLimit;
-
-        parent::__construct($namespaces, $filesCountLimit);
+        $this->sizeLimit = $sizeLimit;
+        $this->namespaces = $namespaces;
+        $this->itemsLimit = $itemsLimit;
     }
 
     /**
      * Add sitemap item.
      *
-     * @param ItemInterface $item
+     * @param SitemapItemInterface $item
      *
      * @return bool
      */
-    public function addItem(ItemInterface $item): bool
+    public function addItem(SitemapItemInterface $item): bool
     {
         return $this->add($item);
     }
@@ -77,9 +72,7 @@ class Sitemap extends AbstractSitemap implements ItemInterface
      */
     public function open(string $filename, $compression = null)
     {
-        $this->filename = $filename;
         $this->setCompression($compression);
-
         if ($this->compressionEnabled()) {
             $filename .= '.gz';
         }
@@ -144,9 +137,23 @@ class Sitemap extends AbstractSitemap implements ItemInterface
      *
      * @return bool
      */
-    protected function isFileSizeLimitReached($data): bool
+    protected function isSizeLimitReached($data): bool
     {
-        return !empty($this->fileSizeLimit) && $this->fileSize + $this->calculateDataSize($data) >= $this->fileSizeLimit;
+        if (empty($this->sizeLimit)) {
+            return false;
+        }
+
+        $size = $this->calculateDataSize($data);
+        if ($this->countSize + $size > $this->sizeLimit) {
+            if (empty($this->countItems)) {
+                //Can't add event one item
+                throw new DataOverflowException();
+            } else {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -156,7 +163,7 @@ class Sitemap extends AbstractSitemap implements ItemInterface
      */
     protected function incrementSizeCounter($data)
     {
-        $this->fileSize += $this->calculateDataSize($data);
+        $this->countSize += $this->calculateDataSize($data);
     }
 
     /**
@@ -182,9 +189,9 @@ class Sitemap extends AbstractSitemap implements ItemInterface
     /**
      * {@inheritdoc}
      */
-    protected function add(ItemInterface $item): bool
+    protected function add(SitemapItemInterface $item): bool
     {
-        if ($this->isFileSizeLimitReached($item->render())) {
+        if ($this->isSizeLimitReached($item->render())) {
             return false;
         }
 
@@ -194,12 +201,12 @@ class Sitemap extends AbstractSitemap implements ItemInterface
     /**
      * {@inheritdoc}
      */
-    protected function openHandler(string $filename)
+    protected function openHandler()
     {
         if ($this->compressionEnabled()) {
-            $this->handler = gzopen($filename, 'wb' . $this->compression);
+            $this->handler = gzopen($this->filename, 'wb' . $this->compression);
         } else {
-            $this->handler = fopen($filename, 'wb');
+            $this->handler = fopen($this->filename, 'wb');
         }
     }
 

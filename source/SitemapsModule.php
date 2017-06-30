@@ -9,7 +9,15 @@ use Spiral\Modules\RegistratorInterface;
 use Spiral\Sitemaps\SitemapsConfig;
 
 /**
- * Class PagesModule
+ * Class SitemapsModule
+ *
+ * Some wiki-links below
+ *
+ * @link    https://www.sitemaps.org/ru/protocol.html general information
+ * @link    https://support.google.com/webmasters/topic/6080646 general information
+ * @link    https://support.google.com/webmasters/answer/178636 images sitemap
+ * @link    https://support.google.com/webmasters/answer/2620865 alter langs sitemsp
+ * @link    https://developers.google.com/webmasters/videosearch/sitemaps video sitemsp
  *
  * @package Spiral
  */
