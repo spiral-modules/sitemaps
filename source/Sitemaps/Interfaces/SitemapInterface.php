@@ -18,4 +18,11 @@ interface SitemapInterface extends SitemapItemInterface, SitemapWriterInterface
      * @return bool
      */
     public function addItem(SitemapItemInterface $item): bool;
+
+    /**
+     * @param string        $filename
+     * @param int|bool|null $compression
+     * {@inheritdoc}
+     */
+    public function open(string $filename, $compression = null);
 }

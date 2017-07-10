@@ -59,10 +59,14 @@ class Sitemaps implements SitemapWriterInterface
     }
 
     //Initiate process
-    public function _open(string $filename, string $directory = null, array $namespaces = [])
+    public function _open(string $filename, string $directory = null)
     {
         if (empty($this->state)) {
-            $this->state = new SitemapsState($filename, $directory, $namespaces);
+            $this->state = new SitemapsState($filename, $directory, [
+                'itemsLimit'  => $this->config->itemsLimit(),
+                'sizeLimit'   => $this->config->sizeLimit(),
+                'compression' => $this->config->compression(),
+            ]);
         }
     }
 
@@ -72,10 +76,38 @@ class Sitemaps implements SitemapWriterInterface
         //close and build index if needed
     }
 
-    public function _makeSitemap(array $options)
+    public function _make(array $options = [])
     {
-        //close previous if opened
-        //open new
+        $sitemap = $this->state->getSitemap();
+        $this->_storeSitemap($sitemap);
+        $this->_setNextSitemapOptions($options);
+    }
+
+    public function _makeSitemap()
+    {
+        return new Sitemap($this->state->getNamespaces(), $this->state->getItemsLimit(), $this->state->getSizeLimit());
+    }
+
+    protected function _setNextSitemapOptions(array $options = [])
+    {
+        $stateOptions = [];
+        if (array_key_exists('namespaces', $options)) {
+            $stateOptions['namespaces'] = $options['namespaces'];
+        }
+
+        if (array_key_exists('itemsLimit', $options)) {
+            $stateOptions['itemsLimit'] = $options['itemsLimit'];
+        }
+
+        if (array_key_exists('sizeLimit', $options)) {
+            $stateOptions['sizeLimit'] = $options['sizeLimit'];
+        }
+
+        if (array_key_exists('compression', $options)) {
+            $stateOptions['compression'] = $options['compression'];
+        }
+
+        $this->state->setOptions($stateOptions);
     }
 
     public function _addItem(SitemapItemInterface $item)
@@ -93,30 +125,9 @@ class Sitemaps implements SitemapWriterInterface
         return $sitemap->addItem($item);
     }
 
-    protected function _restartSitemap()
-    {
-        $sitemap = $this->state->getSitemap();
-        if (!empty($sitemap)) {
-            $sitemap->close();
-
-            //store
-            $subDirectory = $this->config->subDirectory();
-            if (!empty($subDirectory)) {
-                $this->files->ensureDirectory($this->directory . $subDirectory);
-            }
-
-            $destinationFilename = $this->destinationFilename($this->filename);
-            $this->files->move($this->filename, $this->directory . $destinationFilename);
-
-            $this->sitemaps[$destinationFilename] = $this->currentSitemap;
-        }
-
-        //by default: no namespaces and limits from config
-        $sitemap = $this->makeSitemap([], $this->config->itemsLimit(), $this->config->sizeLimit());
-        $this->state->setSitemap($sitemap);
-    }
-
     /**
+     * Current opened sitemap.
+     *
      * @return SitemapInterface
      */
     protected function getSitemap(): SitemapInterface
@@ -124,17 +135,49 @@ class Sitemaps implements SitemapWriterInterface
         $sitemap = $this->state->getSitemap();
         if (empty($sitemap)) {
             //by default: no namespaces and limits from config
-            $sitemap = $this->makeSitemap([], $this->config->itemsLimit(), $this->config->sizeLimit());
+            $sitemap = $this->_makeSitemap();
+            $sitemap->open($this->state->getFilename(), $this->state->getCompression());
             $this->state->setSitemap($sitemap);
         }
 
         return $sitemap;
     }
 
+    protected function _restartSitemap()
+    {
+        $sitemap = $this->state->getSitemap();
+        $this->_storeSitemap($sitemap);
+
+        //by default: no namespaces and limits from config
+        $sitemap = $this->_makeSitemap();
+        $sitemap->open($this->state->getFilename(), $this->state->getCompression());
+        $this->state->setSitemap($sitemap);
+    }
+
+    protected function _storeSitemap(SitemapInterface $sitemap = null)
+    {
+        if (!empty($sitemap)) {
+            $sitemap->close();
+
+            //ensure sub-directory
+            $subDirectory = $this->config->subDirectory();
+            if (!empty($subDirectory)) {
+                $this->files->ensureDirectory($this->state->getDirectory() . $subDirectory);
+            }
+
+            $destination = $this->state->getDirectory() . $subDirectory . $this->state->sequencedFilename();
+            $this->files->move($this->state->getFilename(), $destination);
+
+            $this->sitemaps[$destination] = $sitemap;
+        }
+
+        $this->state->setSitemap(null);
+    }
+
     //force closing
     public function _destruct()
     {
-
+        $this->_close();
     }
 
     /**
