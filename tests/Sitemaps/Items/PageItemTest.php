@@ -3,9 +3,9 @@
 namespace Spiral\Tests\Sitemaps\Items;
 
 use Spiral\Database\Entities\Database;
-use Spiral\Sitemaps\Items\AlterLangItem;
-use Spiral\Sitemaps\Items\ImageItem;
-use Spiral\Sitemaps\Items\PageItem;
+use Spiral\Sitemaps\Items\AlterLang;
+use Spiral\Sitemaps\Items\Image;
+use Spiral\Sitemaps\Items\URL;
 use Spiral\Tests\BaseTest;
 
 class PageItemTest extends BaseTest
@@ -15,7 +15,7 @@ class PageItemTest extends BaseTest
      */
     public function testInvalidFrequency()
     {
-        $item = new PageItem('location.com', null, 'some frequency');
+        $item = new URL('location.com', null, 'some frequency');
     }
 
     /**
@@ -23,24 +23,24 @@ class PageItemTest extends BaseTest
      */
     public function testInvalidPriority()
     {
-        $item = new PageItem('location.com', null, 'daily', 2);
+        $item = new URL('location.com', null, 'daily', 2);
     }
 
     public function testRender()
     {
         $time = new \DateTime();
-        $item = new PageItem(
+        $item = new URL(
             'location.com',
             $time,
             'daily',
             0.6
         );
 
-        $item->addImage(new ImageItem('location.image'));
-        $item->addImage(new ImageItem('location.image2'));
+        $item->addImage(new Image('location.image'));
+        $item->addImage(new Image('location.image2'));
 
-        $item->addAlterLang(new AlterLangItem('de', 'location.de'));
-        $item->addAlterLang(new AlterLangItem('ru', 'location.ru'));
+        $item->addAlterLang(new AlterLang('de', 'location.de'));
+        $item->addAlterLang(new AlterLang('ru', 'location.ru'));
 
         $render = $item->render();
 
@@ -70,7 +70,7 @@ class PageItemTest extends BaseTest
      */
     public function testEmptyRender()
     {
-        $item = new PageItem('location.com');
+        $item = new URL('location.com');
 
         $render = $item->render();
 

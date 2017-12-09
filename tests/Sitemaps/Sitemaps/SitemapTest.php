@@ -2,7 +2,7 @@
 
 namespace Spiral\Tests\Sitemaps\Sitemaps;
 
-use Spiral\Sitemaps\Items\PageItem;
+use Spiral\Sitemaps\Items\URL;
 use Spiral\Sitemaps\Sitemaps\Sitemap;
 use Spiral\Tests\BaseTest;
 
@@ -14,7 +14,7 @@ class SitemapTest extends BaseTest
 
         $sitemap = new Sitemap();
         $sitemap->open($filename);
-        $item = new PageItem('location.com');
+        $item = new URL('location.com');
         $sitemap->addItem($item);
         $sitemap->close();
 
@@ -35,7 +35,7 @@ class SitemapTest extends BaseTest
 
         $sitemap = new Sitemap();
         $sitemap->open($filename);
-        $item = new PageItem('location.com');
+        $item = new URL('location.com');
         $sitemap->addItem($item);
         $sitemap->close();
 
@@ -63,10 +63,10 @@ class SitemapTest extends BaseTest
         $sitemap = new Sitemap([], null, 190);
         $sitemap->open($filename);
 
-        $item1 = new PageItem('location.com1');
-        $item2 = new PageItem('location.com2');
-        $item3 = new PageItem('location.com3');
-        $item4 = new PageItem('location.com4');
+        $item1 = new URL('location.com1');
+        $item2 = new URL('location.com2');
+        $item3 = new URL('location.com3');
+        $item4 = new URL('location.com4');
 
         /*
          * <?xml version="1.0" encoding="UTF-8"?>
@@ -101,10 +101,10 @@ class SitemapTest extends BaseTest
         $sitemap = new Sitemap([], 3);
         $sitemap->open($filename);
 
-        $item1 = new PageItem('location.com1');
-        $item2 = new PageItem('location.com2');
-        $item3 = new PageItem('location.com3');
-        $item4 = new PageItem('location.com4');
+        $item1 = new URL('location.com1');
+        $item2 = new URL('location.com2');
+        $item3 = new URL('location.com3');
+        $item4 = new URL('location.com4');
 
         $this->assertTrue($sitemap->addItem($item1));
         $this->assertTrue($sitemap->addItem($item2));
@@ -126,7 +126,7 @@ class SitemapTest extends BaseTest
     {
         $filename1 = $this->app->directory('runtime') . 'sitemap.xml';
         $filename2 = $this->app->directory('runtime') . 'sitemap2.xml';
-        $item = new PageItem('location.com');
+        $item = new URL('location.com');
 
         $sitemap = new Sitemap();
         $sitemap->open($filename1, true);
@@ -156,7 +156,7 @@ class SitemapTest extends BaseTest
     public function testShouldOpenFirst()
     {
         $sitemap = new Sitemap();
-        $item = new PageItem('location.com');
+        $item = new URL('location.com');
         $sitemap->addItem($item);
     }
 

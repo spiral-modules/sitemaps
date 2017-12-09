@@ -2,14 +2,14 @@
 
 namespace Spiral\Tests\Sitemaps\Items;
 
-use Spiral\Sitemaps\Items\ImageItem;
+use Spiral\Sitemaps\Items\Image;
 use Spiral\Tests\BaseTest;
 
 class ImageItemTest extends BaseTest
 {
     public function testRender()
     {
-        $item = new ImageItem(
+        $item = new Image(
             'location.com',
             'some caption',
             'some geo location',
@@ -34,7 +34,7 @@ class ImageItemTest extends BaseTest
      */
     public function testEmptyRender()
     {
-        $item = new ImageItem('location.com');
+        $item = new Image('location.com');
 
         $render = $item->render();
 

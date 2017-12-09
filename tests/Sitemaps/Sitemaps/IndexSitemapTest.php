@@ -2,7 +2,7 @@
 
 namespace Spiral\Tests\Sitemaps\Sitemaps;
 
-use Spiral\Sitemaps\Items\PageItem;
+use Spiral\Sitemaps\Items\URL;
 use Spiral\Sitemaps\Sitemaps\IndexSitemap;
 use Spiral\Sitemaps\Sitemaps\Sitemap;
 use Spiral\Tests\BaseTest;
@@ -17,12 +17,12 @@ class IndexSitemapTest extends BaseTest
 
         $sitemap1 = new Sitemap();
         $sitemap1->open($filename1);
-        $sitemap1->addItem(new PageItem('location.com1'));
+        $sitemap1->addItem(new URL('location.com1'));
         $sitemap1->close();
 
         $sitemap2 = new Sitemap();
         $sitemap2->open($filename2);
-        $sitemap2->addItem(new PageItem('location.com2'));
+        $sitemap2->addItem(new URL('location.com2'));
         $sitemap2->close();
 
         $index = new IndexSitemap();
@@ -51,17 +51,17 @@ class IndexSitemapTest extends BaseTest
 
         $sitemap1 = new Sitemap();
         $sitemap1->open($filename1);
-        $sitemap1->addItem(new PageItem('location.com1'));
+        $sitemap1->addItem(new URL('location.com1'));
         $sitemap1->close();
 
         $sitemap2 = new Sitemap();
         $sitemap2->open($filename2);
-        $sitemap2->addItem(new PageItem('location.com2'));
+        $sitemap2->addItem(new URL('location.com2'));
         $sitemap2->close();
 
         $sitemap3 = new Sitemap();
         $sitemap3->open($filename3);
-        $sitemap3->addItem(new PageItem('location.com3'));
+        $sitemap3->addItem(new URL('location.com3'));
         $sitemap3->close();
 
         $index = new IndexSitemap(2);
@@ -90,7 +90,7 @@ class IndexSitemapTest extends BaseTest
 
         $sitemap = new Sitemap();
         $sitemap->open($filename);
-        $sitemap->addItem(new PageItem('location.com'));
+        $sitemap->addItem(new URL('location.com'));
         $sitemap->close();
 
         $index = new IndexSitemap();

@@ -2,7 +2,7 @@
 
 namespace Spiral\Sitemaps\Exceptions;
 
-use Spiral\Sitemaps\Items\PageItem;
+use Spiral\Sitemaps\Items\URL;
 
 class InvalidFrequencyException extends \UnexpectedValueException
 {
@@ -11,7 +11,7 @@ class InvalidFrequencyException extends \UnexpectedValueException
         $message = sprintf(
             'Invalid sitemap frequency "%s", valid values are: %s.',
             $frequency,
-            join(', ', PageItem::FREQUENCIES)
+            join(', ', URL::FREQUENCIES)
         );
 
         parent::__construct($message, $code, $previous);

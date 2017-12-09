@@ -8,7 +8,7 @@ use Spiral\Sitemaps\Interfaces\SitemapItemInterface;
  * todo finish
  *
  */
-class VideoItem implements SitemapItemInterface
+class Video implements SitemapItemInterface
 {
     /**
      * VideoItem constructor.

@@ -4,8 +4,8 @@ namespace Spiral;
 
 use Spiral\Core\Service;
 use Spiral\Files\FileManager;
-use Spiral\Sitemaps\Items\ImageItem;
-use Spiral\Sitemaps\Items\PageItem;
+use Spiral\Sitemaps\Items\Image;
+use Spiral\Sitemaps\Items\URL;
 use Spiral\Sitemaps\Namespaces;
 use Spiral\Sitemaps\Sitemaps;
 use Spiral\Sitemaps\Sitemaps\Sitemap;
@@ -58,13 +58,13 @@ class SitemapExample
         //Is equal to
         $sitemap->setNamespaces($namespaces->get(['image', 'lang']));
 
-        $item = new \Spiral\Sitemaps\Items\PageItem('location.com');
-        $item->addImage(new \Spiral\Sitemaps\Items\ImageItem('image-location.com'));
-        $item->addAlterLang(new \Spiral\Sitemaps\Items\AlterLangItem('de', 'location.de'));
-        $item->addVideo(new \Spiral\Sitemaps\Items\VideoItem('video-location.de'));
+        $item = new \Spiral\Sitemaps\Items\URL('location.com');
+        $item->addImage(new \Spiral\Sitemaps\Items\Image('image-location.com'));
+        $item->addAlterLang(new \Spiral\Sitemaps\Items\AlterLang('de', 'location.de'));
+        $item->addVideo(new \Spiral\Sitemaps\Items\Video('video-location.de'));
 
         $sitemap->open('sitemap.xml', 8);
-        $sitemap->addItem(new \Spiral\Sitemaps\Items\PageItem('location.com'));
+        $sitemap->addItem(new \Spiral\Sitemaps\Items\URL('location.com'));
         $sitemap->close();
     }
 
@@ -83,7 +83,7 @@ class SitemapExample
         );
 
         $sitemap->open('sitemap.xml', 8);
-        $sitemap->addItem(new PageItem('location.com'));
+        $sitemap->addItem(new URL('location.com'));
         $sitemap->close();
     }
 }

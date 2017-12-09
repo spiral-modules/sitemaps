@@ -4,7 +4,7 @@ namespace Spiral\Sitemaps\Items;
 
 use Spiral\Sitemaps\Interfaces\SitemapItemInterface;
 
-class ImageItem implements SitemapItemInterface
+class Image implements SitemapItemInterface
 {
     /** @var string */
     private $loc;

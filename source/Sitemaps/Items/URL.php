@@ -6,7 +6,7 @@ use Spiral\Sitemaps\Exceptions\InvalidPriorityException;
 use Spiral\Sitemaps\Exceptions\InvalidFrequencyException;
 use Spiral\Sitemaps\Interfaces\SitemapItemInterface;
 
-class PageItem implements SitemapItemInterface
+class URL implements SitemapItemInterface
 {
     /**
      * Allowed frequencies.
@@ -21,10 +21,13 @@ class PageItem implements SitemapItemInterface
         'never',
     ];
 
-    /** @var ImageItem[] */
+    /** @var Image[] */
     private $images = [];
 
-    /** @var AlterLangItem[] */
+    /** @var Video[] */
+    private $videos = [];
+
+    /** @var AlterLang[] */
     private $alterLangs = [];
 
     /** @var string */
@@ -70,21 +73,40 @@ class PageItem implements SitemapItemInterface
     /**
      * Add image item.
      *
-     * @param ImageItem $image
+     * @param Image $image
+     * @return $this
      */
-    public function addImage(ImageItem $image)
+    public function addImage(Image $image)
     {
         $this->images[] = $image;
+
+        return $this;
     }
 
     /**
      * Add alter lang item.
      *
-     * @param AlterLangItem $lang
+     * @param AlterLang $lang
+     * @return $this
      */
-    public function addAlterLang(AlterLangItem $lang)
+    public function addAlterLang(AlterLang $lang)
     {
         $this->alterLangs[] = $lang;
+
+        return $this;
+    }
+
+    /**
+     * Add video item.
+     *
+     * @param Video $video
+     * @return $this
+     */
+    public function addVideo(Video $video)
+    {
+        $this->videos[] = $video;
+
+        return $this;
     }
 
     /**
@@ -92,9 +114,14 @@ class PageItem implements SitemapItemInterface
      */
     public function render(): string
     {
-        $data = $this->loc() . $this->lastmod() . $this->changefreq() . $this->priority() . $this->images() . $this->alterLangs();
+        $loc = $this->renderLoc();
+        $lastmod = $this->renderLastmod();
+        $changefreq = $this->renderChangefreq();
+        $priority = $this->renderPriority();
+        $images = $this->renderImages();
+        $alterLangs = $this->renderAlterLangs();
 
-        return sprintf('<url>%s</url>', $data);
+        return "<url>{$loc}{$lastmod}{$changefreq}{$priority}{$images}{$alterLangs}</url>";
     }
 
     /**
@@ -102,34 +129,34 @@ class PageItem implements SitemapItemInterface
      *
      * @return string
      */
-    protected function loc(): string
+    protected function renderLoc(): string
     {
-        return sprintf('<loc>%s</loc>', $this->loc);
+        return "<loc>{$this->loc}</loc>";
     }
 
     /**
      * Render last modification time.
      *
-     * @return string
+     * @return string|null
      */
-    protected function lastmod(): string
+    protected function renderLastmod(): string
     {
         if (!empty($this->lastmod)) {
-            return sprintf('<lastmod>%s</lastmod>', $this->lastmod->format('c'));
+            return "<lastmod>{$this->lastmod->format('c')}</lastmod>";
         }
 
-        return '';
+        return null;
     }
 
     /**
      * Render change frequency.
      *
-     * @return string
+     * @return string|null
      */
-    protected function changefreq(): string
+    protected function renderChangefreq(): string
     {
         if (!empty($this->changefreq)) {
-            return sprintf('<changefreq>%s</changefreq>', $this->changefreq);
+            return "<lastmod>{$this->changefreq}</changefreq>";
         }
 
         return '';
@@ -140,7 +167,7 @@ class PageItem implements SitemapItemInterface
      *
      * @return string
      */
-    protected function priority(): string
+    protected function renderPriority(): string
     {
         if (!empty($this->priority)) {
             return sprintf('<priority>%s</priority>', $this->priority);
@@ -154,14 +181,14 @@ class PageItem implements SitemapItemInterface
      *
      * @return string
      */
-    protected function images(): string
+    protected function renderImages(): string
     {
-        $data = '';
+        $images = [];
         foreach ($this->images as $image) {
-            $data .= $image->render();
+            $images[] = $image->render();
         }
 
-        return $data;
+        return join('', $images);
     }
 
     /**
@@ -169,13 +196,28 @@ class PageItem implements SitemapItemInterface
      *
      * @return string
      */
-    protected function alterLangs(): string
+    protected function renderAlterLangs(): string
     {
-        $data = '';
+        $langs = [];
         foreach ($this->alterLangs as $lang) {
-            $data .= $lang->render();
+            $langs[] = $lang->render();
         }
 
-        return $data;
+        return join('', $langs);
+    }
+
+    /**
+     * Render videos.
+     *
+     * @return string
+     */
+    protected function renderVideos(): string
+    {
+        $videos = [];
+        foreach ($this->videos as $video) {
+            $videos[] = $video->render();
+        }
+
+        return join('', $videos);
     }
 }

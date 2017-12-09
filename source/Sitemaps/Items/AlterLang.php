@@ -4,7 +4,7 @@ namespace Spiral\Sitemaps\Items;
 
 use Spiral\Sitemaps\Interfaces\SitemapItemInterface;
 
-class AlterLangItem implements SitemapItemInterface
+class AlterLang implements SitemapItemInterface
 {
     /** @var string */
     private $hreflang;
