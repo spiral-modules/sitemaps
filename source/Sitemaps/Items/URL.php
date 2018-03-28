@@ -74,6 +74,7 @@ class URL implements SitemapItemInterface
      * Add image item.
      *
      * @param Image $image
+     *
      * @return $this
      */
     public function addImage(Image $image)
@@ -87,6 +88,7 @@ class URL implements SitemapItemInterface
      * Add alter lang item.
      *
      * @param AlterLang $lang
+     *
      * @return $this
      */
     public function addAlterLang(AlterLang $lang)
@@ -100,6 +102,7 @@ class URL implements SitemapItemInterface
      * Add video item.
      *
      * @param Video $video
+     *
      * @return $this
      */
     public function addVideo(Video $video)
@@ -107,6 +110,57 @@ class URL implements SitemapItemInterface
         $this->videos[] = $video;
 
         return $this;
+    }
+
+    public function getLocation(): string
+    {
+        return $this->loc;
+    }
+
+    public function hasLastModificationTime(): bool
+    {
+        return !empty($this->lastmod);
+    }
+
+    public function getLastModificationTime(): \DateTimeInterface
+    {
+        return $this->lastmod;
+    }
+
+    public function hasChangeFrequency(): bool
+    {
+        return !empty($this->changefreq);
+    }
+
+    public function getChangeFrequency(): string
+    {
+        return $this->changefreq;
+    }
+
+    public function hasPriority(): bool
+    {
+        return !empty($this->priority);
+    }
+
+    public function getPriority(): float
+    {
+        return $this->priority;
+    }
+
+    /**
+     * @return array|Image[]
+     */
+    public function getImages(): array
+    {
+        return $this->images;
+    }
+
+    /**
+     * @return array|AlterLang[]
+     */
+    public function getAlterLangs(): array
+    {
+        return $this->alterLangs;
     }
 
     /**

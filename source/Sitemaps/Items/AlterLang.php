@@ -24,6 +24,16 @@ class AlterLang implements SitemapItemInterface
         $this->href = $href;
     }
 
+    public function getLang(): string
+    {
+        return $this->hreflang;
+    }
+
+    public function getLocation(): string
+    {
+        return $this->href;
+    }
+
     /**
      * {@inheritdoc}
      */

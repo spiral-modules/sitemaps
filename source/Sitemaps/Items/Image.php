@@ -44,6 +44,51 @@ class Image implements SitemapItemInterface
         $this->license = $license;
     }
 
+    public function getLocation(): string
+    {
+        return $this->loc;
+    }
+
+    public function hasCaption(): bool
+    {
+        return !empty($this->caption);
+    }
+
+    public function getCaption(): string
+    {
+        return $this->caption;
+    }
+
+    public function hasGeoLocation(): bool
+    {
+        return !empty($this->geoLocation);
+    }
+
+    public function getGeoLocation(): string
+    {
+        return $this->geoLocation;
+    }
+
+    public function hasTitle(): bool
+    {
+        return !empty($this->title);
+    }
+
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function hasLicense(): bool
+    {
+        return !empty($this->license);
+    }
+
+    public function getLicense(): string
+    {
+        return $this->license;
+    }
+
     /**
      * {@inheritdoc}
      */
