@@ -2,19 +2,19 @@
 
 namespace Spiral\Sitemaps;
 
+use Spiral\Sitemaps\Configs\NamespacesConfig;
+
 class Namespaces
 {
-    /**
-     * @var SitemapsConfig
-     */
+    const DEFAULT = 'default';
+    const IMAGE   = 'image';
+    const LANG    = 'lang';
+    const VIDEO   = 'video';
+
+    /** @var NamespacesConfig */
     protected $config;
 
-    /**
-     * Namespaces constructor.
-     *
-     * @param SitemapsConfig $config
-     */
-    public function __construct(SitemapsConfig $config)
+    public function __construct(NamespacesConfig $config)
     {
         $this->config = $config;
     }
@@ -23,6 +23,7 @@ class Namespaces
      * Fetch namespaces by theirs short aliases (in case if any other except default are required).
      *
      * @param array $namespaces
+     *
      * @return array
      */
     public function get(array $namespaces): array
