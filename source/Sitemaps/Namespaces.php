@@ -2,7 +2,10 @@
 
 namespace Spiral\Sitemaps;
 
-use Spiral\Sitemaps\Configs\NamespacesConfig;
+use Spiral\Sitemaps\Configs;
+use Spiral\Sitemaps\Entities;
+use Spiral\Sitemaps\Exceptions;
+use Spiral\Sitemaps\Validators;
 
 class Namespaces
 {
@@ -11,30 +14,50 @@ class Namespaces
     const LANG    = 'lang';
     const VIDEO   = 'video';
 
-    /** @var NamespacesConfig */
-    protected $config;
+    /** @var Configs\NamespacesConfig */
+    private $config;
 
-    public function __construct(NamespacesConfig $config)
+    /** @var Validators\NamespaceValidator */
+    private $validator;
+
+    /**
+     * @param Configs\NamespacesConfig      $config
+     * @param Validators\NamespaceValidator $validator
+     */
+    public function __construct(Configs\NamespacesConfig $config, Validators\NamespaceValidator $validator)
     {
         $this->config = $config;
+        $this->validator = $validator;
     }
 
     /**
-     * Fetch namespaces by theirs short aliases (in case if any other except default are required).
+     * @param string $alias
      *
-     * @param array $namespaces
-     *
-     * @return array
+     * @return Entities\SitemapNamespace
+     * @throws Exceptions\UnknownNamespaceAliasException
      */
-    public function get(array $namespaces): array
+    public function getByAlias(string $alias): Entities\SitemapNamespace
     {
-        $output = [];
-        $namespaces['default'] = 'default';
-
-        foreach ($namespaces as $namespace) {
-            $output[$namespace] = $this->config->getNamespace($namespace);
+        if (!$this->config->hasAlias(strtolower($alias))) {
+            throw new Exceptions\UnknownNamespaceAliasException("Unknown namespace alias [$alias].");
         }
 
-        return array_unique($output);
+        $namespace = $this->config->getNamespace($alias);
+
+        return new Entities\SitemapNamespace($namespace['name'], $namespace['uri']);
+    }
+
+    /**
+     * @param string|null $name
+     * @param string      $uri
+     *
+     * @return Entities\SitemapNamespace
+     * @throws Exceptions\InvalidNamespaceException
+     */
+    public function get(string $name = null, string $uri): Entities\SitemapNamespace
+    {
+        $this->validator->validate($name, $uri);
+
+        return new Entities\SitemapNamespace($name, $uri);
     }
 }

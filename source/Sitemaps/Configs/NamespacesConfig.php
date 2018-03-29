@@ -3,27 +3,48 @@
 namespace Spiral\Sitemaps\Configs;
 
 use Spiral\Core\InjectableConfig;
+use Spiral\Sitemaps\Namespaces;
 
 class NamespacesConfig extends InjectableConfig
 {
     const CONFIG = 'modules/sitemaps/namespaces';
 
     protected $config = [
-        'default' => [
-            'namespace' => 'xmlns',
-            'uri'       => 'http://www.sitemaps.org/schemas/sitemap/0.9'
+        Namespaces::DEFAULT => [
+            'name' => 'xmlns',
+            'uri'  => 'http://www.sitemaps.org/schemas/sitemap/0.9'
         ],
-        'image'   => [
-            'namespace' => 'xmlns:image',
-            'uri'       => 'http://www.google.com/schemas/sitemap-image/1.1'
+        Namespaces::IMAGE   => [
+            'name' => 'xmlns:image',
+            'uri'  => 'http://www.google.com/schemas/sitemap-image/1.1'
         ],
-        'lang'    => [
-            'namespace' => 'xmlns:xhtml',
-            'uri'       => 'http://www.w3.org/1999/xhtml'
+        Namespaces::LANG    => [
+            'name' => 'xmlns:xhtml',
+            'uri'  => 'http://www.w3.org/1999/xhtml'
         ],
-        'video'   => [
-            'namespace' => 'xmlns:video',
-            'uri'       => 'http://www.google.com/schemas/sitemap-video/1.1'
+        Namespaces::VIDEO   => [
+            'name' => 'xmlns:video',
+            'uri'  => 'http://www.google.com/schemas/sitemap-video/1.1'
         ]
     ];
+
+    /**
+     * @param string $alias
+     *
+     * @return bool
+     */
+    public function hasAlias(string $alias): bool
+    {
+        return isset($this->config[$alias]);
+    }
+
+    /**
+     * @param string $alias
+     *
+     * @return array
+     */
+    public function getNamespace(string $alias): array
+    {
+        return $this->config[$alias];
+    }
 }
