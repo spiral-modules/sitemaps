@@ -60,4 +60,9 @@ class Namespaces
 
         return new Entities\SitemapNamespace($name, $uri);
     }
+
+    public function getDefault(): Entities\SitemapNamespace
+    {
+        return $this->getByAlias(self::DEFAULT);
+    }
 }

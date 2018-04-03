@@ -66,6 +66,5 @@ class Writers
 
         $writer->endElement(); //urlset
         $writer->endDocument();
-
     }
 }

@@ -66,7 +66,7 @@ class URL implements SitemapItemInterface
 
         $this->loc = $loc;
         $this->lastmod = $lastmod;
-        $this->changefreq = $changefreq;
+        $this->changefreq = strtolower($changefreq);
         $this->priority = $priority;
     }
 

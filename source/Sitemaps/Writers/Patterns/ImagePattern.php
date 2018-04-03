@@ -4,7 +4,10 @@ namespace Spiral\Sitemaps\Writers;
 
 use Spiral\Sitemaps\Items\Image;
 
-class ImageWriter
+/**
+ * @link https://support.google.com/webmasters/answer/178636
+ */
+class ImagePattern
 {
     private $writer;
 

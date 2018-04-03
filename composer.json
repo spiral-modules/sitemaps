@@ -11,7 +11,8 @@
   "require": {
     "php": ">=7.0",
     "spiral/common": "^1.0",
-    "spiral/framework": "^1.0"
+    "spiral/framework": "^1.0",
+    "fzaninotto/Streamer": "^0.0.1"
   },
   "require-dev": {
     "phpunit/phpunit": "~6.0",

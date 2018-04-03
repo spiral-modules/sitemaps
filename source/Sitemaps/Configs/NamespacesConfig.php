@@ -2,12 +2,11 @@
 
 namespace Spiral\Sitemaps\Configs;
 
-use Spiral\Core\InjectableConfig;
 use Spiral\Sitemaps\Namespaces;
 
-class NamespacesConfig extends InjectableConfig
+class NamespacesConfig
 {
-    const CONFIG = 'modules/sitemaps/namespaces';
+    //const CONFIG = 'modules/sitemaps/namespaces';
 
     protected $config = [
         Namespaces::DEFAULT => [

@@ -4,7 +4,7 @@ namespace Spiral\Sitemaps\Writers;
 
 use Spiral\Sitemaps\Items\AlterLang;
 
-class AlterLangWriter
+class AlterLangPattern
 {
     private $writer;
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "5e319c53e11f41487b8e25942e408311",
+    "content-hash": "5643950b7164655f11cee530fe34d005",
     "packages": [
         {
             "name": "cocur/slugify",
@@ -230,6 +230,42 @@
                 "string"
             ],
             "time": "2015-11-06T14:35:42+00:00"
+        },
+        {
+            "name": "fzaninotto/streamer",
+            "version": "0.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/fzaninotto/Streamer.git",
+                "reference": "088c5baeb55794c1445011f90c40ca7f854bf9f3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/fzaninotto/Streamer/zipball/088c5baeb55794c1445011f90c40ca7f854bf9f3",
+                "reference": "088c5baeb55794c1445011f90c40ca7f854bf9f3",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Streamer": "."
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Francois Zaninotto"
+                }
+            ],
+            "description": "Object-oriented API to PHP streams",
+            "homepage": "https://github.com/fzaninotto/Streamer",
+            "time": "2012-07-02T21:44:09+00:00"
         },
         {
             "name": "monolog/monolog",

@@ -18,8 +18,16 @@ class SitemapNamespace
      */
     public function __construct(string $name = null, string $uri)
     {
-        $this->name = $name;
-        $this->uri = $uri;
+        $this->name = strtolower($name);
+        $this->uri = strtolower($uri);
+    }
+
+    /**
+     * @return string
+     */
+    public function getID(): string
+    {
+        return $this->getName() . '.' . $this->getURI();
     }
 
     /**
