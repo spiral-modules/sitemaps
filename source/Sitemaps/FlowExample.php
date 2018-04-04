@@ -9,7 +9,7 @@
 namespace Spiral\Sitemaps;
 
 
-class Writers
+class FlowExample
 {
     public function __construct(\XMLWriter $writer)
     {

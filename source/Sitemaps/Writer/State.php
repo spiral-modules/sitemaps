@@ -16,6 +16,14 @@ class State
     /** @var null|string */
     private $filename;
 
+    /** @var int */
+    private $filesize = 0;
+
+    private $reserverFilesize = 0;
+
+    /** @var int */
+    private $elementsCount = 0;
+
     /**
      * @return bool
      */
@@ -56,5 +64,46 @@ class State
     public function getFilename(): ?string
     {
         return $this->filename;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCurrentElementsCount(): int
+    {
+        return $this->elementsCount;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCurrentFilesize(): int
+    {
+        return $this->filesize;
+    }
+
+    /**
+     * @return int
+     */
+    public function getReservedFilesize(): int
+    {
+        return $this->filesize;
+    }
+
+    /**
+     * @param int $filesize
+     */
+    public function addElement(int $filesize)
+    {
+        $this->elementsCount++;
+        $this->filesize += $filesize;
+    }
+
+    /**
+     * @param int $filesize
+     */
+    public function reserveFilesize(int $filesize)
+    {
+        $this->reserverFilesize += $filesize;
     }
 }

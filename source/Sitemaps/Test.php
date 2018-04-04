@@ -2,16 +2,43 @@
 
 namespace Spiral\Sitemaps;
 
-use Spiral\Sitemaps\Writer\Configurator;
-use Spiral\Sitemaps\Writers\FileWriter;
+use Spiral\Sitemaps\Builders;
+use Spiral\Sitemaps\Entities\URL;
+use Spiral\Sitemaps\Writer;
+use Spiral\Sitemaps\Writers;
 
 class Test
 {
+    public function native(Writer\Configurator $configurator)
+    {
+        $writer = new \XMLWriter();
+        $writer->openMemory();
+        // or
+        //$writer->openURI('uri.xml');
+        $configurator->configure($writer);
+    }
+
+    public function file(Writers\FileWriter $writer, Builders\Sitemap $builder)
+    {
+        $writer->open('x.xml');
+        $builder->start($writer);
+        $builder->addURL($writer, new URL('uri.loc'));
+        $builder->end($writer);
+    }
+
+    public function inMemory(Writers\InMemoryWriter $writer, Builders\Sitemap $builder)
+    {
+        $writer->open();
+        $builder->start($writer);
+        $builder->addURL($writer, new URL('uri.loc'));
+        $builder->end($writer);
+    }
+
     /*
      * file.xml - writes to the file directly. Ignores flush command
      * openMemory - writes to output var when flush
      */
-    public function testFile(Configurator $configurator, FileWriter $writer)
+    public function testFile(Writer\Configurator $configurator, Writers\FileWriter $writer)
     {
         $writer->openMemory();
         $writer->setIndent(true);
@@ -25,7 +52,7 @@ class Test
         $writer->endDocument();
     }
 
-    public function testMem(Configurator $configurator, \XMLWriter $writer)
+    public function testMem(Writer\Configurator $configurator, \XMLWriter $writer)
     {
         $writer->openMemory();
         $writer->setIndent(true);

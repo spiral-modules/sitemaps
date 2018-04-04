@@ -9,26 +9,34 @@
 namespace Spiral\Tests\Sitemaps;
 
 
+use Spiral\Sitemaps\Builders\Sitemap;
+use Spiral\Sitemaps\Entities;
+use Spiral\Sitemaps\Namespaces;
 use Spiral\Sitemaps\Validators\NamespaceValidator;
 use Spiral\Sitemaps\Writer\Configurator;
-use Spiral\Sitemaps\Writers\AlterLangPattern;
 use Spiral\Sitemaps\Writers\FileWriter;
-use Spiral\Sitemaps\Writers\ImagePattern;
 use Spiral\Sitemaps\Writers\InMemoryWriter;
+use Spiral\Sitemaps\Writers\PortionFileWriter;
 use Spiral\Tests\BaseTest;
-use Streamer\Stream;
 
 class WriterTest extends BaseTest
 {
-//    public function testValidator()
-//    {
-//        $validator = new NamespaceValidator();
-//        try {
-//            $validator->validate('xmlns:ab', 'uri');
-//        } catch (\Throwable $e) {
-//            print_r($e->getMessage());
-//        }
-//    }
+    public function testValidator()
+    {
+        $validator = new NamespaceValidator();
+        echo PHP_EOL;
+//        try { $validator->validate('xmlns:ab', 'uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
+//        try { $validator->validate('xmlns:ab', 'a:uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
+//        try { $validator->validate('xmlns:ab', 'a://uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
+//        try { $validator->validate('xmlns:ab', '0://uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
+//        try { $validator->validate('xmlns:ab', '0+://uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
+//        try { $validator->validate('xmlns:ab', '+://uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
+//        try { $validator->validate('xmlns:ab', 'a0://uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
+//        try { $validator->validate('xmlns:ab', 'a.0://uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
+//        try { $validator->validate('xmlns:ab', 'a+0://uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
+//        try { $validator->validate('xmlns:ab', 'a-0://uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
+    }
+
     /**
      * @return \Spiral\Sitemaps\Writer\Configurator
      * @throws \Psr\Container\ContainerExceptionInterface
@@ -60,16 +68,118 @@ class WriterTest extends BaseTest
     }
 
     /**
+     * @return \Spiral\Sitemaps\Writers\PortionFileWriter
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Psr\Container\NotFoundExceptionInterface
      */
-    public function testUri()
+    private function portion(): PortionFileWriter
     {
-//        $writer = $this->file();
-//        $writer->open('x1.xml');
+        return $this->app->container->get(PortionFileWriter::class);
+    }
 
+    /**
+     * @return \Spiral\Sitemaps\Builders\Sitemap
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    private function builder(): Sitemap
+    {
+        return $this->app->container->get(Sitemap::class);
+    }
+
+    /**
+     * @return \Spiral\Sitemaps\Namespaces
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    private function namespaces(): Namespaces
+    {
+        return $this->app->container->get(Namespaces::class);
+    }
+
+    /**
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    public function testFile()
+    {
+        $filename = 'x.xml';
+        $builder = $this->builder();
+        $writer = $this->file();
+        $writer->open($filename);
+//        try {
+//            $writer->openURI($filename);
+//        } catch (\Throwable $e) {
+//            print_r($e->getMessage());
+//            //throw  $e;
+//        }
+        $builder->start($writer);
+//        print_r([$writer->flush(), file_get_contents($filename)]);
+
+        $builder->addURL($writer, new Entities\URL('uri.loc', new \DateTime(), 'weekly', .7));
+//        print_r([$writer->flush(), file_get_contents($filename)]);
+
+//        exit;
+        $builder->addURL($writer, new Entities\URL('uri.loc', new \DateTime(), 'weekly', .7));
+        print_r([file_get_contents($filename),$writer->flush(), file_get_contents($filename)]);
+
+//        $builder->end($writer);
+//        print_r([$writer->flush(), file_get_contents($filename)]);
+//        exit;
+
+//        print_r(file_get_contents($filename));
+    }
+
+    /**
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    public function testPortion()
+    {
+        exit;
+        $filename = 'x.xml';
+        $builder = $this->builder();
+        $writer = $this->portion();
+        $writer->open($filename);
+        try {
+            $writer->openURI($filename);
+        } catch (\Throwable $e) {
+            print_r($e->getMessage());
+            //throw  $e;
+        }
+        $builder->start($writer);
+        $builder->addURL($writer->writer(), new Entities\URL('uri.loc', new \DateTime(), 'weekly', .7));
+        $builder->end($writer);
+
+        print_r(file_get_contents($filename));
+    }
+
+    /**
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws \Spiral\Sitemaps\Exceptions\InvalidNamespaceException
+     */
+    public function testInMemory()
+    {
+        exit;
+        $builder = $this->builder();
         $writer = $this->inMemory();
         $writer->open();
+        $builder->start($writer,
+            [
+                new Entities\SitemapNamespace('bla', 'bla.loc'),
+                $this->namespaces()->getByAlias('image'),
+                $this->namespaces()->get('bla2', 'http://blabla.loc'),
+                $this->namespaces()->get('xmlns:a2', '//blabla.loc'),
+            ]);
+        $builder->addURL($writer, new Entities\URL('uri.loc', new \DateTime(), 'weekly', .7));
+        $builder->end($writer);
+
+        //print_r($writer->close()->getContent());
+        exit;
+
+//        $writer = $this->inMemory();
+//        $writer->open();
 
         $writer->startDocument('1.0', 'UTF-8');
 

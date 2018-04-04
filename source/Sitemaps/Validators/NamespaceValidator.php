@@ -36,8 +36,10 @@ class NamespaceValidator
      */
     private function validateURI(string $uri, array &$errors = [])
     {
-        if (!preg_match('/^(http(s)?:)?\/\//i', $uri)) {
-            $errors['uri'] = "Invalid URI [$uri], HTTP schema is missing.";
+        if (!preg_match('/^([\+\-\.a-z0-9]*:)?\/\//i', $uri)) {
+            $errors['uri'] = "Invalid URI [$uri], scheme is missing.";
+        } elseif (!preg_match('/^([a-z]{1}[\+\-\.a-z0-9]*:)?\/\//i', $uri)) {
+            $errors['uri'] = "Invalid URI [$uri], scheme is invalid.";
         }
     }
 
@@ -48,7 +50,7 @@ class NamespaceValidator
     private function validateName(string $name = null, array &$errors = [])
     {
         if (!empty($name)) {
-            $basename = preg_replace('/^' . Entities\SitemapNamespace::PREFIX . ':/', '', $name);
+            $basename = preg_replace('/^' . Entities\SitemapNamespace::PREFIX . ':/i', '', $name);
             if (mb_strpos($basename, ':') !== false) {
                 $errors['name'] = "Invalid name [$name], colon char is not allowed.";
             }

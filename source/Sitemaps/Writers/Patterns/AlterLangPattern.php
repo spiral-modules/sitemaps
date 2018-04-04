@@ -1,8 +1,8 @@
 <?php
 
-namespace Spiral\Sitemaps\Writers;
+namespace Spiral\Sitemaps\Writers\Patterns;
 
-use Spiral\Sitemaps\Items\AlterLang;
+use Spiral\Sitemaps\Entities\AlterLang;
 
 class AlterLangPattern
 {

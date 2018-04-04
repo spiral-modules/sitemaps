@@ -4,12 +4,14 @@ namespace Spiral\Sitemaps\Writers;
 
 use Spiral\Sitemaps\Exceptions\Writers\WorkflowException;
 use Spiral\Sitemaps\OutputInterface;
+use Spiral\Sitemaps\StatefulWriterInterface;
 use Spiral\Sitemaps\Writer;
 
-abstract class AbstractWriter extends \XMLWriter
+//todo just rewrite original xmlwriter open methods.
+abstract class AbstractWriter extends \XMLWriter implements StatefulWriterInterface
 {
     /** @var Writer\State */
-    public $state;
+    protected $state;
 
     /** @var Writer\Configurator */
     protected $configurator;
@@ -21,6 +23,14 @@ abstract class AbstractWriter extends \XMLWriter
     {
         $this->configurator = $configurator;
         $this->state = new Writer\State();
+    }
+
+    /**
+     * @return Writer\State
+     */
+    public function getState(): Writer\State
+    {
+        return $this->state;
     }
 
     /**

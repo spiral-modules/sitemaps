@@ -1,8 +1,8 @@
 <?php
 
-namespace Spiral\Sitemaps\Writers;
+namespace Spiral\Sitemaps\Writers\Patterns;
 
-use Spiral\Sitemaps\Items\Image;
+use Spiral\Sitemaps\Entities\Image;
 
 /**
  * @link https://support.google.com/webmasters/answer/178636

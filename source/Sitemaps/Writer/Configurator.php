@@ -13,14 +13,12 @@ class Configurator
         $this->config = $config;
     }
 
-    public function configure(\XMLWriter $writer): \XMLWriter
+    public function configure(\XMLWriter $writer)
     {
         $writer->setIndent($this->config->indent());
 
         if ($this->config->indent()) {
             $writer->setIndentString($this->config->indentString());
         }
-
-        return $writer;
     }
 }
