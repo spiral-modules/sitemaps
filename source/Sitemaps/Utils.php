@@ -31,4 +31,15 @@ class Utils
     {
         return mb_strlen($string, '8bit');
     }
+
+    /**
+     * @param resource $resource
+     */
+    public static function assertResource($resource)
+    {
+        if (false === is_resource($resource)) {
+            $type = gettype($resource);
+            throw new \InvalidArgumentException("Argument must be a valid resource type. $type given.");
+        }
+    }
 }

@@ -9,12 +9,15 @@
 namespace Spiral\Tests\Sitemaps;
 
 
+use samdark\sitemap\DeflateWriter;
 use Spiral\Sitemaps\Builders\Sitemap;
 use Spiral\Sitemaps\Entities;
 use Spiral\Sitemaps\Exceptions\EnormousElementException;
 use Spiral\Sitemaps\Namespaces;
 use Spiral\Sitemaps\Reservation;
+use Spiral\Sitemaps\Transports\DeflateTransport;
 use Spiral\Sitemaps\Transports\FileTransport;
+use Spiral\Sitemaps\Transports\GZIPTransport;
 use Spiral\Sitemaps\Validators\NamespaceValidator;
 use Spiral\Sitemaps\Configurator;
 use Spiral\Tests\BaseTest;
@@ -58,33 +61,42 @@ class WriterTest extends BaseTest
      */
     public function testBuilder()
     {
-        $builder = $this->builder();
-        $builder->start(new FileTransport(), 'x.xml');
         try {
-            if (!$builder->addURL(new Entities\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
-                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
-            } else {
-                print_r('ELEMENT ADDED' . PHP_EOL);
+            $builder = $this->builder();
+            $builder->start(new FileTransport(), 'x3.xml');
+            try {
+                if (!$builder->addURL(new Entities\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
+                    print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+                } else {
+                    print_r('ELEMENT ADDED' . PHP_EOL);
+                }
+
+                if (!$builder->addURL(new Entities\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
+                    print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+                } else {
+                    print_r('ELEMENT ADDED' . PHP_EOL);
+                }
+
+                if (!$builder->addURL(new Entities\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
+                    print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+                } else {
+                    print_r('ELEMENT ADDED' . PHP_EOL);
+                }
+            } catch (EnormousElementException $exception) {
+                print_r('EX:' . $exception->getMessage() . PHP_EOL);
+            } catch (\Throwable $exception) {
+                print_r('EX2:' . $exception->getMessage() . PHP_EOL);
             }
 
-            if (!$builder->addURL(new Entities\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
-                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
-            } else {
-                print_r('ELEMENT ADDED' . PHP_EOL);
-            }
-
-            if (!$builder->addURL(new Entities\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
-                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
-            } else {
-                print_r('ELEMENT ADDED' . PHP_EOL);
-            }
-        } catch (EnormousElementException $exception) {
-            print_r('EX:' . $exception->getMessage() . PHP_EOL);
-        } catch (\Throwable $exception) {
-            print_r('EX2:' . $exception->getMessage() . PHP_EOL);
+            $builder->end();
+        }catch (\Throwable $exception){
+            print_r('EX3:' . $exception->getMessage() . PHP_EOL);
         }
-
-        $builder->end();
+        $wr = new DeflateWriter('xxx.xml.gz');
+        $wr->append('bla');
+        $wr->append('bla2');
+        $wr->append('bla3');
+        $wr->finish();
     }
 
     /**
