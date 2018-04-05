@@ -1,14 +1,14 @@
 <?php
 
-namespace Spiral\Sitemaps\Writer;
+namespace Spiral\Sitemaps;
 
-use Spiral\Sitemaps\Configs\WriterConfig;
+use Spiral\Sitemaps\Configs\DeclarationConfig;
 
 class Configurator
 {
     private $config;
 
-    public function __construct(WriterConfig $config)
+    public function __construct(DeclarationConfig $config)
     {
         $this->config = $config;
     }
@@ -20,5 +20,7 @@ class Configurator
         if ($this->config->indent()) {
             $writer->setIndentString($this->config->indentString());
         }
+
+        return $writer;
     }
 }

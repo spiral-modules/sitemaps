@@ -1,6 +1,6 @@
 <?php
 
-namespace Spiral\Sitemaps\Writers\Patterns;
+namespace Spiral\Sitemaps\Patterns;
 
 use Spiral\Sitemaps\Entities\Image;
 

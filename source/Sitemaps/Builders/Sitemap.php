@@ -2,100 +2,182 @@
 
 namespace Spiral\Sitemaps\Builders;
 
+use Spiral\Sitemaps\Configs\BuilderConfig;
+use Spiral\Sitemaps\Configurator;
+use Spiral\Sitemaps\Declaration;
 use Spiral\Sitemaps\Entities;
-use Spiral\Sitemaps\Namespaces;
+use Spiral\Sitemaps\Exceptions\EnormousElementException;
+use Spiral\Sitemaps\Exceptions\WorkflowException;
+use Spiral\Sitemaps\Reservation;
+use Spiral\Sitemaps\TransportInterface;
+use Spiral\Sitemaps\Utils;
 use Spiral\Sitemaps\Validators\SitemapValidator;
-use Spiral\Sitemaps\Writers\Patterns\URLPattern;
+use Spiral\Sitemaps\Writer;
+use Spiral\Sitemaps\Patterns\URLPattern;
 
 class Sitemap
 {
-//    public function __construct($builder)
-//    {
-//        $builder->start(); //in memory or tmp file
-//        $builder->finish();
-//        $builder->saveToFile();
-//    }
+    /** @var URLPattern */
+    private $pattern;
 
-    /** @var Entities\SitemapNamespace[] */
-    protected $basicNamespaces = [];
-
-    private $urlPattern;
-
+    /** @var SitemapValidator */
     private $validator;
 
-    public function __construct(Namespaces $nsManager, URLPattern $urlPattern, SitemapValidator $validator)
-    {
-        $this->urlPattern = $urlPattern;
+    /** @var Declaration */
+    private $declaration;
+
+    /** @var Reservation */
+    private $reservation;
+
+    /** @var Configurator */
+    private $configurator;
+
+    /** @var Writer\State */
+    private $state;
+
+    /** @var Writer\Buffer */
+    private $buffer;
+
+    /** @var Writer|null */
+    private $writer;
+
+    /** @var Writer|null */
+    private $writerHelper;
+
+    /** @var BuilderConfig */
+    private $config;
+
+    /** @var TransportInterface|null */
+    private $transport;
+
+    public function __construct(
+        URLPattern $pattern,
+        SitemapValidator $validator,
+        Declaration $declaration,
+        Reservation $reservation,
+        Configurator $configurator,
+        BuilderConfig $config
+    ) {
+        $this->pattern = $pattern;
         $this->validator = $validator;
-        $this->basicNamespaces = $this->addNamespace($nsManager->getDefault());
-    }
-
-    public function start(\XMLWriter $writer, array $namespaces = [])
-    {
-        $writer->startDocument('1.0', 'UTF-8');
-        $writer->startElement('urlset');
-
-        $this->writeNamespaces($writer, $namespaces);
-    }
-
-    public function addURL(\XMLWriter $writer, Entities\URL $url)
-    {
-        //todo validate possibility of adding new element by urls amount and file size
-        //if file size or items amount is out
-        //  return false;
-        //else
-        //  write url
-        //  return true;
-        $this->urlPattern->write($writer, $url);
-
-        return true;
+        $this->declaration = $declaration;
+        $this->reservation = $reservation;
+        $this->configurator = $configurator;
+        $this->config = $config;
+        $this->state = new Writer\State();
+        $this->buffer = new Writer\Buffer();
     }
 
     /**
-     * @param \XMLWriter $writer
+     * @param TransportInterface $transport
+     * @param string             $filename
+     * @param array              $namespaces
      */
-    public function end(\XMLWriter $writer)
+    public function start(TransportInterface $transport, string $filename, array $namespaces = [])
     {
-        $writer->endElement();
-        $writer->endDocument();
-    }
-
-    /**
-     * @param \XMLWriter $writer
-     * @param array      $namespaces
-     */
-    protected function writeNamespaces(\XMLWriter $writer, array $namespaces)
-    {
-        foreach ($this->listNamespaces($namespaces) as $namespace) {
-            $writer->writeAttribute($namespace->getName(), $namespace->getURI());
-        }
-    }
-
-    /**
-     * @param Entities\SitemapNamespace[] $namespaces
-     *
-     * @return array
-     */
-    protected function listNamespaces(array $namespaces): array
-    {
-        $result = $this->basicNamespaces;
-        foreach ($namespaces as $namespace) {
-            $result = $this->addNamespace($namespace, $result);
+        if (!empty($this->writer)) {
+            throw new WorkflowException('XML writer is already opened.');
         }
 
-        return $result;
+        $this->transport = $transport;
+
+        $this->state->reserveFilesize($this->reservation->calculateSize($namespaces));
+        $this->writer = $this->makeConfiguredWriter($filename, $namespaces);
+        $this->writerHelper = $this->makeWriterHelper($namespaces);
+
+        $this->transport->open($this->writer);
     }
 
     /**
-     * @param Entities\SitemapNamespace $namespace
-     * @param array                     $namespaces
+     * @param \Spiral\Sitemaps\Entities\URL $url
      *
-     * @return array
+     * @return bool
      */
-    protected function addNamespace(Entities\SitemapNamespace $namespace, array $namespaces = []): array
+    public function addURL(Entities\URL $url)
     {
-        $namespaces[$namespace->getID()] = $namespace;
+        $this->writeElement($this->writerHelper, $url);
+        $data = $this->writerHelper->flush();
+        $size = Utils::length($data);
 
-        return $namespaces;
+        if ($this->validator->isEnormousElement($this->state, $size)) {
+            throw new EnormousElementException(Utils::bytes($size));
+        }
+
+        if ($this->validator->validate($this->state, $size)) {
+            $this->writeElement($this->writer, $url);
+            $this->state->addElement($size);
+            $this->buffer->add($size);
+
+            if ($this->bufferOverflow()) {
+                $this->transport->append($this->writer);
+                $this->buffer->flush();
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public function end()
+    {
+        if (empty($this->writer)) {
+            throw new WorkflowException('XML writer is already closed.');
+        }
+
+        $this->declaration->finalize($this->writer);
+        $this->transport->close($this->writer);
+
+        $this->writer = null;
+        $this->writerHelper = null;
+        $this->transport = null;
+    }
+
+    /**
+     * @param string $filename
+     * @param array  $namespaces
+     *
+     * @return Writer
+     */
+    private function makeConfiguredWriter(string $filename, array $namespaces): Writer
+    {
+        $writer = new Writer($filename);
+        $writer->openMemory();
+        $this->configurator->configure($writer);
+        $this->declaration->declare($writer, $namespaces);
+
+        return $writer;
+    }
+
+    /**
+     * @param array $namespaces
+     *
+     * @return \XMLWriter
+     */
+    private function makeWriterHelper(array $namespaces): \XMLWriter
+    {
+        $writer = new \XMLWriter();
+        $writer->openMemory();
+
+        $this->configurator->configure($writer);
+        $this->declaration->declare($writer, $namespaces);
+
+        $writer->text("\n");
+        $writer->flush();
+
+        return $writer;
+    }
+
+    /**
+     * @return bool
+     */
+    private function bufferOverflow(): bool
+    {
+        return $this->buffer->getElements() === $this->config->bufferElements() || $this->buffer->getSize() >= $this->config->bufferSize();
+    }
+
+    private function writeElement(\XMLWriter $writer, Entities\URL $url)
+    {
+        $this->pattern->write($writer, $url);
     }
 }

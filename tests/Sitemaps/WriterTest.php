@@ -11,20 +11,20 @@ namespace Spiral\Tests\Sitemaps;
 
 use Spiral\Sitemaps\Builders\Sitemap;
 use Spiral\Sitemaps\Entities;
+use Spiral\Sitemaps\Exceptions\EnormousElementException;
 use Spiral\Sitemaps\Namespaces;
+use Spiral\Sitemaps\Reservation;
+use Spiral\Sitemaps\Transports\FileTransport;
 use Spiral\Sitemaps\Validators\NamespaceValidator;
-use Spiral\Sitemaps\Writer\Configurator;
-use Spiral\Sitemaps\Writers\FileWriter;
-use Spiral\Sitemaps\Writers\InMemoryWriter;
-use Spiral\Sitemaps\Writers\PortionFileWriter;
+use Spiral\Sitemaps\Configurator;
 use Spiral\Tests\BaseTest;
 
 class WriterTest extends BaseTest
 {
-    public function testValidator()
-    {
-        $validator = new NamespaceValidator();
-        echo PHP_EOL;
+//    public function testValidator()
+//    {
+//        $validator = new NamespaceValidator();
+//        echo PHP_EOL;
 //        try { $validator->validate('xmlns:ab', 'uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
 //        try { $validator->validate('xmlns:ab', 'a:uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
 //        try { $validator->validate('xmlns:ab', 'a://uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
@@ -35,46 +35,66 @@ class WriterTest extends BaseTest
 //        try { $validator->validate('xmlns:ab', 'a.0://uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
 //        try { $validator->validate('xmlns:ab', 'a+0://uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
 //        try { $validator->validate('xmlns:ab', 'a-0://uri'); } catch (\Throwable $e) { print_r($e->getMessage().PHP_EOL); }
+//    }
+
+    /**
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+//    public function testReserve()
+//    {
+//        exit;
+//        /** @var Reservation $reserve */
+//        $reserve = $this->app->container->get(Reservation::class);
+//
+//        $reserve->calculateSize();
+//        $reserve->calculateSize([$this->namespaces()->getByAlias('image')]);
+//    }
+
+    /**
+     * @throws \Exception
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    public function testBuilder()
+    {
+        $builder = $this->builder();
+        $builder->start(new FileTransport(), 'x.xml');
+        try {
+            if (!$builder->addURL(new Entities\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
+                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+            } else {
+                print_r('ELEMENT ADDED' . PHP_EOL);
+            }
+
+            if (!$builder->addURL(new Entities\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
+                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+            } else {
+                print_r('ELEMENT ADDED' . PHP_EOL);
+            }
+
+            if (!$builder->addURL(new Entities\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
+                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+            } else {
+                print_r('ELEMENT ADDED' . PHP_EOL);
+            }
+        } catch (EnormousElementException $exception) {
+            print_r('EX:' . $exception->getMessage() . PHP_EOL);
+        } catch (\Throwable $exception) {
+            print_r('EX2:' . $exception->getMessage() . PHP_EOL);
+        }
+
+        $builder->end();
     }
 
     /**
-     * @return \Spiral\Sitemaps\Writer\Configurator
+     * @return \Spiral\Sitemaps\Configurator
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Psr\Container\NotFoundExceptionInterface
      */
     private function configurator(): Configurator
     {
         return $this->app->container->get(Configurator::class);
-    }
-
-    /**
-     * @return \Spiral\Sitemaps\Writers\InMemoryWriter
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     */
-    private function inMemory(): InMemoryWriter
-    {
-        return $this->app->container->get(InMemoryWriter::class);
-    }
-
-    /**
-     * @return \Spiral\Sitemaps\Writers\FileWriter
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     */
-    private function file(): FileWriter
-    {
-        return $this->app->container->get(FileWriter::class);
-    }
-
-    /**
-     * @return \Spiral\Sitemaps\Writers\PortionFileWriter
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     */
-    private function portion(): PortionFileWriter
-    {
-        return $this->app->container->get(PortionFileWriter::class);
     }
 
     /**
@@ -103,6 +123,7 @@ class WriterTest extends BaseTest
      */
     public function testFile()
     {
+        exit;
         $filename = 'x.xml';
         $builder = $this->builder();
         $writer = $this->file();
@@ -121,7 +142,7 @@ class WriterTest extends BaseTest
 
 //        exit;
         $builder->addURL($writer, new Entities\URL('uri.loc', new \DateTime(), 'weekly', .7));
-        print_r([file_get_contents($filename),$writer->flush(), file_get_contents($filename)]);
+        print_r([file_get_contents($filename), $writer->flush(), file_get_contents($filename)]);
 
 //        $builder->end($writer);
 //        print_r([$writer->flush(), file_get_contents($filename)]);

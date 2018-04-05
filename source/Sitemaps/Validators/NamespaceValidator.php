@@ -9,15 +9,15 @@ class NamespaceValidator
 {
     /**
      * @param string|null $name
-     * @param string      $uri
+     * @param string      $url
      *
      * @return bool
      * @throws Exceptions\InvalidNamespaceException
      */
-    public function validate(string $name = null, string $uri): bool
+    public function validate(string $name = null, string $url): bool
     {
         $errors = [];
-        $this->validateURI($uri, $errors);
+        $this->validateURL($url, $errors);
         $this->validateName($name, $errors);
 
         if (empty($errors)) {
@@ -31,15 +31,15 @@ class NamespaceValidator
     }
 
     /**
-     * @param string $uri
+     * @param string $url
      * @param array  $errors
      */
-    private function validateURI(string $uri, array &$errors = [])
+    private function validateURL(string $url, array &$errors = [])
     {
-        if (!preg_match('/^([\+\-\.a-z0-9]*:)?\/\//i', $uri)) {
-            $errors['uri'] = "Invalid URI [$uri], scheme is missing.";
-        } elseif (!preg_match('/^([a-z]{1}[\+\-\.a-z0-9]*:)?\/\//i', $uri)) {
-            $errors['uri'] = "Invalid URI [$uri], scheme is invalid.";
+        if (!preg_match('/^([\+\-\.a-z0-9]*:)?\/\//i', $url)) {
+            $errors['url'] = "Invalid URL [$url], scheme is missing.";
+        } elseif (!preg_match('/^([a-z]{1}[\+\-\.a-z0-9]*:)?\/\//i', $url)) {
+            $errors['url'] = "Invalid URL [$url], scheme is invalid.";
         }
     }
 

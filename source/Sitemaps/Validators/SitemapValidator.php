@@ -2,14 +2,14 @@
 
 namespace Spiral\Sitemaps\Validators;
 
-use Spiral\Sitemaps\Configs\SitemapConfig;
+use Spiral\Sitemaps\Configs\BuilderConfig;
 use Spiral\Sitemaps\Writer\State;
 
 class SitemapValidator
 {
     private $config;
 
-    public function __construct(SitemapConfig $config)
+    public function __construct(BuilderConfig $config)
     {
         $this->config = $config;
     }
@@ -27,13 +27,13 @@ class SitemapValidator
 
     /**
      * @param State $state
-     * @param int   $filesize
+     * @param int   $size
      *
      * @return bool
      */
-    public function validate(State $state, int $filesize): bool
+    public function validate(State $state, int $size): bool
     {
-        return $this->newElementAllowed($state) && $this->filesizeAllowed($state, $filesize);
+        return $this->newElementAllowed($state) && $this->filesizeAllowed($state, $size);
     }
 
     /**
@@ -48,12 +48,12 @@ class SitemapValidator
 
     /**
      * @param State $state
-     * @param int   $filesize
+     * @param int   $size
      *
      * @return bool
      */
-    private function filesizeAllowed(State $state, int $filesize): bool
+    private function filesizeAllowed(State $state, int $size): bool
     {
-        return $filesize < ($this->config->filesize() - $state->getReservedFilesize() - $state->getCurrentFilesize());
+        return $size <= ($this->config->filesize() - $state->getReservedFilesize() - $state->getCurrentFilesize());
     }
 }

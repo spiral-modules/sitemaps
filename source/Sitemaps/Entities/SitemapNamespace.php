@@ -39,6 +39,10 @@ class SitemapNamespace
             return self::PREFIX;
         }
 
+        if ($this->basename() === self::PREFIX) {
+            return $this->basename();
+        }
+
         return self::PREFIX . ':' . $this->basename();
     }
 
