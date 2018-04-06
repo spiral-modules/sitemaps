@@ -11,6 +11,7 @@ namespace Spiral\Tests\Sitemaps;
 
 use samdark\sitemap\DeflateWriter;
 use Spiral\Sitemaps\Builders\Sitemap;
+use Spiral\Sitemaps\Builders\SitemapIndex;
 use Spiral\Sitemaps\Entities;
 use Spiral\Sitemaps\Exceptions\EnormousElementException;
 use Spiral\Sitemaps\Namespaces;
@@ -89,7 +90,41 @@ class WriterTest extends BaseTest
             }
 
             $builder->end();
-        }catch (\Throwable $exception){
+        } catch (\Throwable $exception) {
+            print_r('EX3:' . $exception->getMessage() . PHP_EOL);
+        }
+    }
+
+    /**
+     * @throws \Exception
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    public function testSitemapBuilder()
+    {
+        try {
+            $builder = $this->sitemapBuilder();
+            $builder->start(new FileTransport(), 'index.xml');
+            try {
+                if (!$builder->addSitemap(new Entities\Sitemap('http://uri.loc/x1.xml', 'x1.xml'))) {
+                    print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+                } else {
+                    print_r('ELEMENT ADDED' . PHP_EOL);
+                }
+
+                if (!$builder->addSitemap(new Entities\Sitemap('http://uri.loc/x3.xml', 'x3.xml'))) {
+                    print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+                } else {
+                    print_r('ELEMENT ADDED' . PHP_EOL);
+                }
+            } catch (EnormousElementException $exception) {
+                print_r('EX:' . $exception->getMessage() . PHP_EOL);
+            } catch (\Throwable $exception) {
+                print_r('EX2:' . $exception->getMessage() . PHP_EOL);
+            }
+
+            $builder->end();
+        } catch (\Throwable $exception) {
             print_r('EX3:' . $exception->getMessage() . PHP_EOL);
         }
         $wr = new DeflateWriter('xxx.xml.gz');
@@ -117,6 +152,16 @@ class WriterTest extends BaseTest
     private function builder(): Sitemap
     {
         return $this->app->container->get(Sitemap::class);
+    }
+
+    /**
+     * @return \Spiral\Sitemaps\Builders\SitemapIndex
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    private function sitemapBuilder(): SitemapIndex
+    {
+        return $this->app->container->get(SitemapIndex::class);
     }
 
     /**

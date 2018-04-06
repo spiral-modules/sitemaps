@@ -3,66 +3,65 @@
 namespace Spiral\Sitemaps\Patterns;
 
 use Spiral\Sitemaps\Entities\Image;
+use Spiral\Sitemaps\EntityInterface;
+use Spiral\Sitemaps\PatternInterface;
 
 /**
  * @link https://support.google.com/webmasters/answer/178636
  */
 class ImagePattern
 {
-    private $writer;
-
-    public function __construct(\XMLWriter $writer)
+    /**
+     * @param \XMLWriter            $writer
+     * @param EntityInterface|Image $image
+     */
+    public function write(\XMLWriter $writer, Image $image)
     {
-        $this->writer = $writer;
+        $writer->startElement('image:image');
+
+        $this->writeImageLocation($writer, $image);
+        $this->writeImageCaption($writer, $image);
+        $this->writeImageGeoLocation($writer, $image);
+        $this->writeImageTitle($writer, $image);
+        $this->writeImageLicense($writer, $image);
+
+        $writer->endElement();
     }
 
-    public function write(Image $image)
+    private function writeImageLocation(\XMLWriter $writer, Image $image)
     {
-        $this->writer->startElement('image:image');
-
-        $this->writeImageLocation($image);
-        $this->writeImageCaption($image);
-        $this->writeImageGeoLocation($image);
-        $this->writeImageTitle($image);
-        $this->writeImageLicense($image);
-
-        $this->writer->endElement();
+        $writer->writeElement('image:loc', $image->getLocation());
     }
 
-    private function writeImageLocation(Image $image)
-    {
-        $this->writer->writeElement('image:loc', $image->getLocation());
-    }
-
-    private function writeImageCaption(Image $image)
+    private function writeImageCaption(\XMLWriter $writer, Image $image)
     {
         if ($image->hasCaption()) {
-            $this->writer->startElement('image:caption');
-            $this->writer->writeCData($image->getCaption());
-            $this->writer->endElement();
+            $writer->startElement('image:caption');
+            $writer->writeCData($image->getCaption());
+            $writer->endElement();
         }
     }
 
-    private function writeImageGeoLocation(Image $image)
+    private function writeImageGeoLocation(\XMLWriter $writer, Image $image)
     {
         if ($image->hasGeoLocation()) {
-            $this->writer->writeElement('image:geo_location', $image->hasGeoLocation());
+            $writer->writeElement('image:geo_location', $image->hasGeoLocation());
         }
     }
 
-    private function writeImageTitle(Image $image)
+    private function writeImageTitle(\XMLWriter $writer, Image $image)
     {
         if ($image->hasTitle()) {
-            $this->writer->startElement('image:title');
-            $this->writer->writeCData($image->getTitle());
-            $this->writer->endElement();
+            $writer->startElement('image:title');
+            $writer->writeCData($image->getTitle());
+            $writer->endElement();
         }
     }
 
-    private function writeImageLicense(Image $image)
+    private function writeImageLicense(\XMLWriter $writer, Image $image)
     {
         if ($image->hasLicense()) {
-            $this->writer->writeElement('image:license', $image->getLicense());
+            $writer->writeElement('image:license', $image->getLicense());
         }
     }
 }

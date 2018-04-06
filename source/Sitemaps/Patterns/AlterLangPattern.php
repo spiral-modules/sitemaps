@@ -3,24 +3,23 @@
 namespace Spiral\Sitemaps\Patterns;
 
 use Spiral\Sitemaps\Entities\AlterLang;
+use Spiral\Sitemaps\EntityInterface;
+use Spiral\Sitemaps\PatternInterface;
 
 class AlterLangPattern
 {
-    private $writer;
-
-    public function __construct(\XMLWriter $writer)
+    /**
+     * @param \XMLWriter                $writer
+     * @param EntityInterface|AlterLang $lang
+     */
+    public function write(\XMLWriter $writer, AlterLang $lang)
     {
-        $this->writer = $writer;
-    }
+        $writer->startElement('xhtml:link');
 
-    public function write(AlterLang $lang)
-    {
-        $this->writer->startElement('xhtml:link');
+        $writer->writeAttribute('rel', 'alternate');
+        $writer->writeAttribute('hreflang', $lang->getLang());
+        $writer->writeAttribute('href', $lang->getLocation());
 
-        $this->writer->writeAttribute('rel', 'alternate');
-        $this->writer->writeAttribute('hreflang', $lang->getLang());
-        $this->writer->writeAttribute('href', $lang->getLocation());
-
-        $this->writer->endElement();
+        $writer->endElement();
     }
 }

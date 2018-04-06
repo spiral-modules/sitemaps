@@ -3,11 +3,15 @@
 namespace Spiral\Sitemaps\Patterns;
 
 use Spiral\Sitemaps\Entities\URL;
+use Spiral\Sitemaps\EntityInterface;
+use Spiral\Sitemaps\PatternInterface;
 
 class URLPattern
 {
+    /** @var ImagePattern  */
     private $images;
 
+    /** @var AlterLangPattern  */
     private $langs;
 
     public function __construct(ImagePattern $images, AlterLangPattern $langs)
@@ -16,7 +20,11 @@ class URLPattern
         $this->langs = $langs;
     }
 
-    public function write(\XMLWriter $writer, $url)
+    /**
+     * @param \XMLWriter          $writer
+     * @param EntityInterface|URL $url
+     */
+    public function write(\XMLWriter $writer, EntityInterface $url)
     {
         $writer->startElement('url');
         $this->writeContent($writer, $url);
@@ -26,8 +34,8 @@ class URLPattern
     protected function writeContent(\XMLWriter $writer, $url)
     {
         $this->writeURL($writer, $url);
-        $this->writeImages($url);
-        $this->writeAlterLangs($url);
+        $this->writeImages($writer, $url);
+        $this->writeAlterLangs($writer, $url);
     }
 
     private function writeURL(\XMLWriter $writer, $url)
@@ -64,17 +72,17 @@ class URLPattern
         }
     }
 
-    private function writeImages(URL $url)
+    private function writeImages(\XMLWriter $writer, URL $url)
     {
         foreach ($url->getImages() as $image) {
-            $this->images->write($image);
+            $this->images->write($writer, $image);
         }
     }
 
-    private function writeAlterLangs(URL $url)
+    private function writeAlterLangs(\XMLWriter $writer, URL $url)
     {
         foreach ($url->getAlterLangs() as $lang) {
-            $this->langs->write($lang);
+            $this->langs->write($writer, $lang);
         }
     }
 }

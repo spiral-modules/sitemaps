@@ -2,7 +2,9 @@
 
 namespace Spiral\Sitemaps\Entities;
 
-class AlterLang
+use Spiral\Sitemaps\EntityInterface;
+
+class AlterLang implements EntityInterface
 {
     /** @var string */
     private $hreflang;

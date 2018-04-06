@@ -2,11 +2,11 @@
 
 namespace Spiral\Sitemaps;
 
-use Spiral\Sitemaps\Configs\DeclarationConfig;
+use Spiral\Sitemaps\Configs\DeclarationIndexConfig;
 
-class Declaration implements DeclarationInterface
+class DeclarationIndex implements DeclarationInterface
 {
-    /** @var DeclarationConfig */
+    /** @var DeclarationIndexConfig */
     private $config;
 
     /** @var Namespaces */
@@ -15,10 +15,10 @@ class Declaration implements DeclarationInterface
     /**
      * Declaration constructor.
      *
-     * @param DeclarationConfig $config
+     * @param DeclarationIndexConfig $config
      * @param Namespaces        $namespaces
      */
-    public function __construct(DeclarationConfig $config, Namespaces $namespaces)
+    public function __construct(DeclarationIndexConfig $config, Namespaces $namespaces)
     {
         $this->config = $config;
         $this->namespaces = $namespaces;

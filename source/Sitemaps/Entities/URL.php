@@ -1,35 +1,13 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Valentin
- * Date: 28.03.2018
- * Time: 18:21
- */
 
 namespace Spiral\Sitemaps\Entities;
 
+use Spiral\Sitemaps\EntityInterface;
 
-class URL
+class URL implements EntityInterface
 {
-
-    /**
-     * Allowed frequencies.
-     */
-    const FREQUENCIES = [
-        'always',
-        'hourly',
-        'daily',
-        'weekly',
-        'monthly',
-        'yearly',
-        'never',
-    ];
-
     /** @var Image[] */
     private $images = [];
-
-    /** @var Video[] */
-    private $videos = [];
 
     /** @var AlterLang[] */
     private $alterLangs = [];

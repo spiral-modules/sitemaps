@@ -2,7 +2,9 @@
 
 namespace Spiral\Sitemaps\Entities;
 
-class Image
+use Spiral\Sitemaps\EntityInterface;
+
+class Image implements EntityInterface
 {
     /** @var string */
     private $loc;
