@@ -2,6 +2,8 @@
 
 namespace Spiral\Sitemaps\Exceptions;
 
-class InvalidNamespaceException extends \ErrorException
+use Spiral\Sitemaps\SitemapsExceptionInterface;
+
+class InvalidNamespaceException extends \ErrorException implements SitemapsExceptionInterface
 {
 }

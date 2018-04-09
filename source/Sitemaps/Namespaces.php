@@ -34,12 +34,12 @@ class Namespaces
      * @param string $alias
      *
      * @return Elements\SitemapNamespace
-     * @throws Exceptions\UnknownNamespaceAliasException
+     * @throws Exceptions\UnexpectedNamespaceException
      */
     public function getByAlias(string $alias): Elements\SitemapNamespace
     {
         if (!$this->config->hasAlias(strtolower($alias))) {
-            throw new Exceptions\UnknownNamespaceAliasException("Unknown namespace alias [$alias].");
+            throw new Exceptions\UnexpectedNamespaceException("Unknown namespace alias [$alias].");
         }
 
         $namespace = $this->config->getNamespace($alias);
@@ -61,6 +61,9 @@ class Namespaces
         return new Elements\SitemapNamespace($name, $uri);
     }
 
+    /**
+     * @return Elements\SitemapNamespace
+     */
     public function getDefault(): Elements\SitemapNamespace
     {
         return $this->getByAlias(self::DEFAULT);

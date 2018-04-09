@@ -6,8 +6,7 @@ use Spiral\Sitemaps\Configs\BuilderConfig;
 use Spiral\Sitemaps\Configurator;
 use Spiral\Sitemaps\Declaration;
 use Spiral\Sitemaps\ElementInterface;
-use Spiral\Sitemaps\Exceptions\EnormousElementException;
-use Spiral\Sitemaps\Exceptions\WorkflowException;
+use Spiral\Sitemaps\Exceptions;
 use Spiral\Sitemaps\Reservation;
 use Spiral\Sitemaps\TransportInterface;
 use Spiral\Sitemaps\Utils;
@@ -62,7 +61,7 @@ abstract class AbstractBuilder
     public function start(TransportInterface $transport, string $filename, array $namespaces = [])
     {
         if (!empty($this->writer)) {
-            throw new WorkflowException('XML writer is already opened.');
+            throw new Exceptions\LogicException('XML writer has already been opened.');
         }
 
         $this->transport = $transport;
@@ -78,7 +77,7 @@ abstract class AbstractBuilder
     public function end()
     {
         if (empty($this->writer)) {
-            throw new WorkflowException('XML writer is already closed.');
+            throw new Exceptions\LogicException('XML writer has already been closed.');
         }
 
         $this->declaration->finalize($this->writer);
@@ -132,7 +131,7 @@ abstract class AbstractBuilder
         $size = $this->calculateElementSize($element);
 
         if ($this->validator->isEnormousElement($this->writer->getState(), $size)) {
-            throw new EnormousElementException(Utils::bytes($size));
+            throw new Exceptions\EnormousElementException(Utils::bytes($size));
         }
 
         if (!$this->validator->validate($this->writer->getState(), $size)) {

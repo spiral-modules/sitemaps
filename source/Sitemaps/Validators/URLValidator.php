@@ -4,26 +4,20 @@ namespace Spiral\Sitemaps\Validators;
 
 use Spiral\Sitemaps\Elements\URL;
 use Spiral\Sitemaps\Exceptions;
+use Spiral\Sitemaps\Frequency;
 
 class URLValidator
 {
-    /**
-     * Allowed frequencies.
-     */
-    const FREQUENCIES = [
-        'always',
-        'hourly',
-        'daily',
-        'weekly',
-        'monthly',
-        'yearly',
-        'never',
-    ];
-
+    /** @var ImageValidator */
     private $images;
 
+    /** @var AlterLangValidator */
     private $alterLangs;
 
+    /**
+     * @param ImageValidator     $images
+     * @param AlterLangValidator $alterLangs
+     */
     public function __construct(ImageValidator $images, AlterLangValidator $alterLangs)
     {
         $this->images = $images;
@@ -84,10 +78,10 @@ class URLValidator
      */
     private function validateChangeFrequency(string $changeFrequency, array $errors)
     {
-        if (!in_array($changeFrequency, self::FREQUENCIES)) {
+        if (!in_array($changeFrequency, Frequency::FREQUENCIES)) {
             $errors['frequency'] = sprintf(
                 "Invalid sitemap frequency [$changeFrequency], valid values are [%s].",
-                join(', ', self::FREQUENCIES)
+                join(', ', Frequency::FREQUENCIES)
             );
         }
     }

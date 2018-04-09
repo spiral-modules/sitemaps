@@ -4,6 +4,6 @@ namespace Spiral\Sitemaps\Exceptions;
 
 use Spiral\Sitemaps\SitemapsExceptionInterface;
 
-class InvalidURLException extends \ErrorException implements SitemapsExceptionInterface
+class LogicException extends \LogicException implements SitemapsExceptionInterface
 {
 }

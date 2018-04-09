@@ -2,7 +2,9 @@
 
 namespace Spiral\Sitemaps\Exceptions;
 
-class EnormousElementException extends \OverflowException
+use Spiral\Sitemaps\SitemapsExceptionInterface;
+
+class EnormousElementException extends \OverflowException implements SitemapsExceptionInterface
 {
     public function __construct(string $size)
     {
