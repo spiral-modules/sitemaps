@@ -28,6 +28,11 @@ class Writer extends \XMLWriter
         $this->file = $this->file->withResource($resource);
     }
 
+    public function flushResource()
+    {
+        $this->file = $this->file->flushResource();
+    }
+
     /**
      * @return resource
      */

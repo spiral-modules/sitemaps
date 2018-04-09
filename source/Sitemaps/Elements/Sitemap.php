@@ -1,10 +1,10 @@
 <?php
 
-namespace Spiral\Sitemaps\Entities;
+namespace Spiral\Sitemaps\Elements;
 
-use Spiral\Sitemaps\EntityInterface;
+use Spiral\Sitemaps\ElementInterface;
 
-class Sitemap implements EntityInterface
+class Sitemap implements ElementInterface
 {
     /** @var string */
     private $loc;
@@ -13,13 +13,13 @@ class Sitemap implements EntityInterface
     private $lastmod;
 
     /**
-     * @param string $loc
-     * @param string $filename
+     * @param string             $loc
+     * @param \DateTimeInterface $lastmod
      */
-    public function __construct(string $loc, string $filename)
+    public function __construct(string $loc, \DateTimeInterface $lastmod)
     {
         $this->loc = $loc;
-        $this->lastmod =  (new \DateTimeImmutable())->setTimestamp(filemtime($filename));
+        $this->lastmod = $lastmod;
     }
 
     /**

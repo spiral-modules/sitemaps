@@ -6,6 +6,7 @@ use Spiral\Sitemaps\Configs\DeclarationConfig;
 
 class Configurator
 {
+    /** @var DeclarationConfig  */
     private $config;
 
     public function __construct(DeclarationConfig $config)

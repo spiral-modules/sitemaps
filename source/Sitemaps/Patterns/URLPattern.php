@@ -2,16 +2,16 @@
 
 namespace Spiral\Sitemaps\Patterns;
 
-use Spiral\Sitemaps\Entities\URL;
-use Spiral\Sitemaps\EntityInterface;
+use Spiral\Sitemaps\Elements\URL;
+use Spiral\Sitemaps\ElementInterface;
 use Spiral\Sitemaps\PatternInterface;
 
-class URLPattern
+class URLPattern implements PatternInterface
 {
-    /** @var ImagePattern  */
+    /** @var ImagePattern */
     private $images;
 
-    /** @var AlterLangPattern  */
+    /** @var AlterLangPattern */
     private $langs;
 
     public function __construct(ImagePattern $images, AlterLangPattern $langs)
@@ -21,29 +21,18 @@ class URLPattern
     }
 
     /**
-     * @param \XMLWriter          $writer
-     * @param EntityInterface|URL $url
+     * @param \XMLWriter           $writer
+     * @param ElementInterface|URL $url
      */
-    public function write(\XMLWriter $writer, EntityInterface $url)
+    public function write(\XMLWriter $writer, ElementInterface $url)
     {
         $writer->startElement('url');
-        $this->writeContent($writer, $url);
-        $writer->endElement();
-    }
-
-    protected function writeContent(\XMLWriter $writer, $url)
-    {
-        $this->writeURL($writer, $url);
-        $this->writeImages($writer, $url);
-        $this->writeAlterLangs($writer, $url);
-    }
-
-    private function writeURL(\XMLWriter $writer, $url)
-    {
         $this->writeLocation($writer, $url);
         $this->writeLastModificationTime($writer, $url);
         $this->writeChangeFrequency($writer, $url);
         $this->writePriority($writer, $url);
+        $this->writeSubContent($writer, $url);
+        $writer->endElement();
     }
 
     private function writeLocation(\XMLWriter $writer, URL $url)
@@ -70,6 +59,12 @@ class URLPattern
         if ($url->hasPriority()) {
             $writer->writeElement('priority', number_format($url->getPriority(), 1));
         }
+    }
+
+    protected function writeSubContent(\XMLWriter $writer, $url)
+    {
+        $this->writeImages($writer, $url);
+        $this->writeAlterLangs($writer, $url);
     }
 
     private function writeImages(\XMLWriter $writer, URL $url)

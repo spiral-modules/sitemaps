@@ -2,6 +2,6 @@
 
 namespace Spiral\Sitemaps;
 
-interface EntityInterface
+interface ElementInterface
 {
 }

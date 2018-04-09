@@ -4,9 +4,10 @@ namespace Spiral\Sitemaps;
 
 class File
 {
+    /** @var string */
     private $filename;
 
-    /** @var resource */
+    /** @var resource|null */
     private $resource;
 
     /**
@@ -38,6 +39,14 @@ class File
 
         $file = clone $this;
         $file->resource = $resource;
+
+        return $file;
+    }
+
+    public function flushResource()
+    {
+        $file = clone $this;
+        $file->resource = null;
 
         return $file;
     }

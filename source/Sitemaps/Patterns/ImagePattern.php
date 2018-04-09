@@ -2,18 +2,18 @@
 
 namespace Spiral\Sitemaps\Patterns;
 
-use Spiral\Sitemaps\Entities\Image;
-use Spiral\Sitemaps\EntityInterface;
+use Spiral\Sitemaps\Elements\Image;
+use Spiral\Sitemaps\ElementInterface;
 use Spiral\Sitemaps\PatternInterface;
 
 /**
  * @link https://support.google.com/webmasters/answer/178636
  */
-class ImagePattern
+class ImagePattern implements PatternInterface
 {
     /**
-     * @param \XMLWriter            $writer
-     * @param EntityInterface|Image $image
+     * @param \XMLWriter             $writer
+     * @param ElementInterface|Image $image
      */
     public function write(\XMLWriter $writer, Image $image)
     {

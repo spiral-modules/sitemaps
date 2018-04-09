@@ -7,11 +7,10 @@ class BuilderConfig
     //const CONFIG = 'modules/sitemaps/builder';
 
     protected $config = [
-        'buffer-elements' => 2,
-        'buffer-size'     => 1024 * 1024,
+        'buffer-elements' => 10,
+        'buffer-size'     => 10 * 1024, //10 KiB
         'max-elements'    => 50000,
-//        'max-size'        => 472,
-        'max-size'    => 10 * 1024 * 1024,
+        'max-size'        => 10 * 1024 * 1024, //10 MiB
     ];
 
     /**

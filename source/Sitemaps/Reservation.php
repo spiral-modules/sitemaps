@@ -21,14 +21,15 @@ class Reservation
     }
 
     /**
-     * @param array $namespaces
+     * @param string $builder
+     * @param array  $namespaces
      *
      * @return int
      */
-    public function calculateSize(array $namespaces = []): int
+    public function calculateSize(string $builder, array $namespaces = []): int
     {
         $writer = $this->getConfiguredWriter();
-        $this->declareWriter($writer, $namespaces);
+        $this->declareWriter($builder, $writer, $namespaces);
 
         return $this->calculate($writer);
     }
@@ -46,12 +47,13 @@ class Reservation
     }
 
     /**
+     * @param string     $builder
      * @param \XMLWriter $writer
      * @param array      $namespaces
      */
-    private function declareWriter(\XMLWriter $writer, array $namespaces)
+    private function declareWriter(string $builder, \XMLWriter $writer, array $namespaces)
     {
-        $this->declaration->declare($writer, $namespaces);
+        $this->declaration->declare($builder, $writer, $namespaces);
         $writer->text("\n");
         $this->declaration->finalize($writer);
     }

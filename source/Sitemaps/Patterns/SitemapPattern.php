@@ -2,15 +2,15 @@
 
 namespace Spiral\Sitemaps\Patterns;
 
-use Spiral\Sitemaps\Entities\Sitemap;
-use Spiral\Sitemaps\EntityInterface;
+use Spiral\Sitemaps\Elements\Sitemap;
+use Spiral\Sitemaps\ElementInterface;
 use Spiral\Sitemaps\PatternInterface;
 
-class SitemapPattern
+class SitemapPattern implements PatternInterface
 {
     /**
-     * @param \XMLWriter              $writer
-     * @param EntityInterface|Sitemap $sitemap
+     * @param \XMLWriter               $writer
+     * @param ElementInterface|Sitemap $sitemap
      */
     public function write(\XMLWriter $writer, Sitemap $sitemap)
     {

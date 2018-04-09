@@ -1,10 +1,10 @@
 <?php
 
-namespace Spiral\Sitemaps\Entities;
+namespace Spiral\Sitemaps\Elements;
 
-use Spiral\Sitemaps\EntityInterface;
+use Spiral\Sitemaps\ElementInterface;
 
-class URL implements EntityInterface
+class URL implements ElementInterface
 {
     /** @var Image[] */
     private $images = [];

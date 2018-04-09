@@ -2,7 +2,7 @@
 
 namespace Spiral\Sitemaps\Validators;
 
-use Spiral\Sitemaps\Entities\AlterLang;
+use Spiral\Sitemaps\Elements\AlterLang;
 
 class AlterLangValidator
 {

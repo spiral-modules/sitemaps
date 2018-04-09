@@ -1,6 +1,6 @@
 <?php
 
-namespace Spiral\Sitemaps\Entities;
+namespace Spiral\Sitemaps\Elements;
 
 class SitemapNamespace
 {

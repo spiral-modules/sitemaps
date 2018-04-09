@@ -3,7 +3,7 @@
 namespace Spiral\Sitemaps\Validators;
 
 use Spiral\Sitemaps\Exceptions;
-use Spiral\Sitemaps\Entities;
+use Spiral\Sitemaps\Elements;
 
 class NamespaceValidator
 {
@@ -50,7 +50,7 @@ class NamespaceValidator
     private function validateName(string $name = null, array &$errors = [])
     {
         if (!empty($name)) {
-            $basename = preg_replace('/^' . Entities\SitemapNamespace::PREFIX . ':/i', '', $name);
+            $basename = preg_replace('/^' . Elements\SitemapNamespace::PREFIX . ':/i', '', $name);
             if (mb_strpos($basename, ':') !== false) {
                 $errors['name'] = "Invalid name [$name], colon char is not allowed.";
             }

@@ -4,41 +4,22 @@ namespace Spiral\Sitemaps\Builders;
 
 use Spiral\Sitemaps\Configs\BuilderConfig;
 use Spiral\Sitemaps\Configurator;
-use Spiral\Sitemaps\DeclarationInterface;
-use Spiral\Sitemaps\EntityInterface;
+use Spiral\Sitemaps\Declaration;
+use Spiral\Sitemaps\ElementInterface;
 use Spiral\Sitemaps\Exceptions\EnormousElementException;
 use Spiral\Sitemaps\Exceptions\WorkflowException;
-use Spiral\Sitemaps\PatternInterface;
 use Spiral\Sitemaps\Reservation;
 use Spiral\Sitemaps\TransportInterface;
 use Spiral\Sitemaps\Utils;
 use Spiral\Sitemaps\Validators\SitemapValidator;
 use Spiral\Sitemaps\Writer;
 
-class AbstractBuilder
+abstract class AbstractBuilder
 {
-    /** @var \Spiral\Sitemaps\PatternInterface */
-    protected $pattern;
-
     /** @var SitemapValidator */
-    protected $validator;
+    private $validator;
 
-    /** @var Writer\State */
-    protected $state;
-
-    /** @var Writer\Buffer */
-    protected $buffer;
-
-    /** @var Writer|null */
-    protected $writer;
-
-    /** @var Writer|null */
-    protected $writerHelper;
-
-    /** @var TransportInterface|null */
-    protected $transport;
-
-    /** @var \Spiral\Sitemaps\DeclarationInterface */
+    /** @var \Spiral\Sitemaps\Declaration */
     protected $declaration;
 
     /** @var Reservation */
@@ -50,22 +31,33 @@ class AbstractBuilder
     /** @var BuilderConfig */
     private $config;
 
+    /** @var Writer|null */
+    protected $writer;
+
+    /** @var Writer|null */
+    protected $writerHelper;
+
+    /** @var TransportInterface|null */
+    protected $transport;
+
+    /** @var Writer\State */
+    protected $state;
+
+    /** @var Writer\Buffer */
+    protected $buffer;
+
     public function __construct(
-        PatternInterface $pattern,
-        DeclarationInterface $declaration,
+        Declaration $declaration,
         SitemapValidator $validator,
         Reservation $reservation,
         Configurator $configurator,
         BuilderConfig $config
     ) {
-        $this->pattern = $pattern;
         $this->declaration = $declaration;
         $this->validator = $validator;
         $this->reservation = $reservation;
         $this->configurator = $configurator;
         $this->config = $config;
-        $this->state = new Writer\State();
-        $this->buffer = new Writer\Buffer();
     }
 
     /**
@@ -79,9 +71,11 @@ class AbstractBuilder
             throw new WorkflowException('XML writer is already opened.');
         }
 
+        $this->state = new Writer\State();
+        $this->buffer = new Writer\Buffer();
         $this->transport = $transport;
 
-        $this->state->reserveFilesize($this->reservation->calculateSize($namespaces));
+        $this->state->reserveFilesize($this->reservation->calculateSize(static::class, $namespaces));
         $this->writer = $this->makeConfiguredWriter($filename, $namespaces);
         $this->writerHelper = $this->makeWriterHelper($namespaces);
 
@@ -106,12 +100,12 @@ class AbstractBuilder
      *
      * @return Writer
      */
-    private function makeConfiguredWriter(string $filename, array $namespaces): Writer
+    protected function makeConfiguredWriter(string $filename, array $namespaces): Writer
     {
         $writer = new Writer($filename);
         $writer->openMemory();
         $this->configurator->configure($writer);
-        $this->declaration->declare($writer, $namespaces);
+        $this->declaration->declare(static::class, $writer, $namespaces);
 
         return $writer;
     }
@@ -121,18 +115,76 @@ class AbstractBuilder
      *
      * @return \XMLWriter
      */
-    private function makeWriterHelper(array $namespaces): \XMLWriter
+    protected function makeWriterHelper(array $namespaces): \XMLWriter
     {
         $writer = new \XMLWriter();
         $writer->openMemory();
 
         $this->configurator->configure($writer);
-        $this->declaration->declare($writer, $namespaces);
+        $this->declaration->declare(static::class, $writer, $namespaces);
 
         $writer->text("\n");
         $writer->flush();
 
         return $writer;
+    }
+
+    /**
+     * @param \Spiral\Sitemaps\ElementInterface $entity
+     *
+     * @return bool
+     */
+    protected function addElement(ElementInterface $entity): bool
+    {
+        $size = $this->calcSize($entity);
+
+        if ($this->validator->isEnormousElement($this->state, $size)) {
+            throw new EnormousElementException(Utils::bytes($size));
+        }
+
+        if (!$this->validator->validate($this->state, $size)) {
+            return false;
+        }
+
+        $this->write($this->writer, $entity);
+        $this->state->addElement($size);
+        $this->buffer->add($size);
+
+        $this->flushBufferIfOverflow();
+
+        return true;
+    }
+
+    /**
+     * @param \Spiral\Sitemaps\ElementInterface $entity
+     *
+     * @return int
+     */
+    private function calcSize(ElementInterface $entity): int
+    {
+        $this->write($this->writerHelper, $entity);
+        $data = $this->writerHelper->flush();
+
+        return Utils::length($data);
+    }
+
+    /**
+     * @param \XMLWriter       $writer
+     * @param ElementInterface $element
+     *
+     * @return mixed
+     */
+    abstract protected function write(\XMLWriter $writer, ElementInterface $element);
+
+    /**
+     *
+     */
+    private function flushBufferIfOverflow()
+    {
+        if ($this->bufferOverflow()) {
+            $this->transport->append($this->writer);
+            $this->buffer->flush();
+        }
     }
 
     /**
@@ -144,51 +196,12 @@ class AbstractBuilder
     }
 
     /**
-     * @link https://www.sitemaps.org/protocol.html#index
      *
-     * @param \Spiral\Sitemaps\EntityInterface $entity
-     *
-     * @return bool
      */
-    protected function addElement(EntityInterface $entity): bool
-    {
-        $size = $this->calcSize($entity);
-
-        if ($this->validator->isEnormousElement($this->state, $size)) {
-            throw new EnormousElementException(Utils::bytes($size));
-        }
-
-        if ($this->validator->validate($this->state, $size)) {
-            $this->pattern->write($this->writer, $entity);
-            $this->state->addElement($size);
-            $this->buffer->add($size);
-
-            if ($this->bufferOverflow()) {
-                $this->transport->append($this->writer);
-                $this->buffer->flush();
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @param \Spiral\Sitemaps\EntityInterface $entity
-     *
-     * @return int
-     */
-    private function calcSize(EntityInterface $entity): int
-    {
-        $this->pattern->write($this->writerHelper, $entity);
-        $data = $this->writerHelper->flush();
-
-        return Utils::length($data);
-    }
-
     protected function flushState()
     {
+        $this->state = null;
+        $this->buffer = null;
         $this->writer = null;
         $this->writerHelper = null;
         $this->transport = null;

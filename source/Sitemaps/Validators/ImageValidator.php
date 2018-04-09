@@ -2,7 +2,7 @@
 
 namespace Spiral\Sitemaps\Validators;
 
-use Spiral\Sitemaps\Entities\Image;
+use Spiral\Sitemaps\Elements\Image;
 
 class ImageValidator
 {

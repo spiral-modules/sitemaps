@@ -2,7 +2,7 @@
 
 namespace Spiral\Sitemaps\Validators;
 
-use Spiral\Sitemaps\Entities\URL;
+use Spiral\Sitemaps\Elements\URL;
 use Spiral\Sitemaps\Exceptions;
 
 class URLValidator

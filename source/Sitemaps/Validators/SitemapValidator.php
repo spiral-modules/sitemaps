@@ -26,6 +26,8 @@ class SitemapValidator
     }
 
     /**
+     * @link https://www.sitemaps.org/protocol.html#index
+     *
      * @param State $state
      * @param int   $size
      *

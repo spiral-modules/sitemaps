@@ -19,6 +19,8 @@ class GZIPTransport implements TransportInterface
     {
         $handler = $this->writeAndReturnHandler($writer);
         gzclose($handler);
+
+        $writer->flushResource();
     }
 
     public function append(Writer $writer)

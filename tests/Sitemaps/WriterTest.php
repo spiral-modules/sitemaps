@@ -12,7 +12,7 @@ namespace Spiral\Tests\Sitemaps;
 use samdark\sitemap\DeflateWriter;
 use Spiral\Sitemaps\Builders\Sitemap;
 use Spiral\Sitemaps\Builders\SitemapIndex;
-use Spiral\Sitemaps\Entities;
+use Spiral\Sitemaps\Elements;
 use Spiral\Sitemaps\Exceptions\EnormousElementException;
 use Spiral\Sitemaps\Namespaces;
 use Spiral\Sitemaps\Reservation;
@@ -62,23 +62,24 @@ class WriterTest extends BaseTest
      */
     public function testBuilder()
     {
+        $filename = 'x1.xml';
         try {
             $builder = $this->builder();
-            $builder->start(new FileTransport(), 'x3.xml');
+            $builder->start(new FileTransport(), $filename);
             try {
-                if (!$builder->addURL(new Entities\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
+                if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
                     print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
                 } else {
                     print_r('ELEMENT ADDED' . PHP_EOL);
                 }
 
-                if (!$builder->addURL(new Entities\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
+                if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
                     print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
                 } else {
                     print_r('ELEMENT ADDED' . PHP_EOL);
                 }
 
-                if (!$builder->addURL(new Entities\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
+                if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
                     print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
                 } else {
                     print_r('ELEMENT ADDED' . PHP_EOL);
@@ -93,6 +94,8 @@ class WriterTest extends BaseTest
         } catch (\Throwable $exception) {
             print_r('EX3:' . $exception->getMessage() . PHP_EOL);
         }
+
+        print_r(file_get_contents($filename));
     }
 
     /**
@@ -102,17 +105,20 @@ class WriterTest extends BaseTest
      */
     public function testSitemapBuilder()
     {
+        $filename = 'index.xml';
         try {
             $builder = $this->sitemapBuilder();
-            $builder->start(new FileTransport(), 'index.xml');
+            $builder->start(new FileTransport(), $filename);
             try {
-                if (!$builder->addSitemap(new Entities\Sitemap('http://uri.loc/x1.xml', 'x1.xml'))) {
+                if (!$builder->addSitemap(new Elements\Sitemap('http://uri.loc/x1.xml',
+                    (new \DateTimeImmutable())->setTimestamp(filemtime('x1.xml'))))) {
                     print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
                 } else {
                     print_r('ELEMENT ADDED' . PHP_EOL);
                 }
 
-                if (!$builder->addSitemap(new Entities\Sitemap('http://uri.loc/x3.xml', 'x3.xml'))) {
+                if (!$builder->addSitemap(new Elements\Sitemap('http://uri.loc/x3.xml',
+                    (new \DateTimeImmutable())->setTimestamp(filemtime('x3.xml'))))) {
                     print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
                 } else {
                     print_r('ELEMENT ADDED' . PHP_EOL);
@@ -127,11 +133,8 @@ class WriterTest extends BaseTest
         } catch (\Throwable $exception) {
             print_r('EX3:' . $exception->getMessage() . PHP_EOL);
         }
-        $wr = new DeflateWriter('xxx.xml.gz');
-        $wr->append('bla');
-        $wr->append('bla2');
-        $wr->append('bla3');
-        $wr->finish();
+
+        print_r(file_get_contents($filename));
     }
 
     /**
@@ -194,11 +197,11 @@ class WriterTest extends BaseTest
         $builder->start($writer);
 //        print_r([$writer->flush(), file_get_contents($filename)]);
 
-        $builder->addURL($writer, new Entities\URL('uri.loc', new \DateTime(), 'weekly', .7));
+        $builder->addURL($writer, new Elements\URL('uri.loc', new \DateTime(), 'weekly', .7));
 //        print_r([$writer->flush(), file_get_contents($filename)]);
 
 //        exit;
-        $builder->addURL($writer, new Entities\URL('uri.loc', new \DateTime(), 'weekly', .7));
+        $builder->addURL($writer, new Elements\URL('uri.loc', new \DateTime(), 'weekly', .7));
         print_r([file_get_contents($filename), $writer->flush(), file_get_contents($filename)]);
 
 //        $builder->end($writer);
@@ -226,7 +229,7 @@ class WriterTest extends BaseTest
             //throw  $e;
         }
         $builder->start($writer);
-        $builder->addURL($writer->writer(), new Entities\URL('uri.loc', new \DateTime(), 'weekly', .7));
+        $builder->addURL($writer->writer(), new Elements\URL('uri.loc', new \DateTime(), 'weekly', .7));
         $builder->end($writer);
 
         print_r(file_get_contents($filename));
@@ -245,12 +248,12 @@ class WriterTest extends BaseTest
         $writer->open();
         $builder->start($writer,
             [
-                new Entities\SitemapNamespace('bla', 'bla.loc'),
+                new Elements\SitemapNamespace('bla', 'bla.loc'),
                 $this->namespaces()->getByAlias('image'),
                 $this->namespaces()->get('bla2', 'http://blabla.loc'),
                 $this->namespaces()->get('xmlns:a2', '//blabla.loc'),
             ]);
-        $builder->addURL($writer, new Entities\URL('uri.loc', new \DateTime(), 'weekly', .7));
+        $builder->addURL($writer, new Elements\URL('uri.loc', new \DateTime(), 'weekly', .7));
         $builder->end($writer);
 
         //print_r($writer->close()->getContent());

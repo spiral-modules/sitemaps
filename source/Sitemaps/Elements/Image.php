@@ -1,10 +1,10 @@
 <?php
 
-namespace Spiral\Sitemaps\Entities;
+namespace Spiral\Sitemaps\Elements;
 
-use Spiral\Sitemaps\EntityInterface;
+use Spiral\Sitemaps\ElementInterface;
 
-class Image implements EntityInterface
+class Image implements ElementInterface
 {
     /** @var string */
     private $loc;

@@ -1,10 +1,10 @@
 <?php
 
-namespace Spiral\Sitemaps\Entities;
+namespace Spiral\Sitemaps\Elements;
 
-use Spiral\Sitemaps\EntityInterface;
+use Spiral\Sitemaps\ElementInterface;
 
-class AlterLang implements EntityInterface
+class AlterLang implements ElementInterface
 {
     /** @var string */
     private $hreflang;

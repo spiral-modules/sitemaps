@@ -4,7 +4,7 @@ namespace Spiral\Sitemaps;
 
 use Spiral\Sitemaps\Configs\DeclarationConfig;
 
-class Declaration implements DeclarationInterface
+class Declaration
 {
     /** @var DeclarationConfig */
     private $config;
@@ -25,13 +25,14 @@ class Declaration implements DeclarationInterface
     }
 
     /**
+     * @param string     $builder
      * @param \XMLWriter $writer
      * @param array      $namespaces
      */
-    public function declare(\XMLWriter $writer, array $namespaces = [])
+    public function declare(string $builder, \XMLWriter $writer, array $namespaces = [])
     {
         $writer->startDocument($this->config->version(), $this->config->encoding());
-        $writer->startElement($this->config->rootElement());
+        $writer->startElement($this->config->rootElement($builder));
 
         $this->writeNamespaces($writer, $namespaces);
     }
@@ -57,7 +58,7 @@ class Declaration implements DeclarationInterface
     }
 
     /**
-     * @param Entities\SitemapNamespace[] $namespaces
+     * @param Elements\SitemapNamespace[] $namespaces
      *
      * @return array
      */
@@ -80,12 +81,12 @@ class Declaration implements DeclarationInterface
     }
 
     /**
-     * @param Entities\SitemapNamespace $namespace
+     * @param Elements\SitemapNamespace $namespace
      * @param array                     $namespaces
      *
      * @return array
      */
-    private function addNamespace(Entities\SitemapNamespace $namespace, array $namespaces = []): array
+    private function addNamespace(Elements\SitemapNamespace $namespace, array $namespaces = []): array
     {
         $namespaces[$namespace->getID()] = $namespace;
 
