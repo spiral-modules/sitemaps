@@ -17,6 +17,7 @@ use Spiral\Sitemaps\Elements;
 use Spiral\Sitemaps\Exceptions\EnormousElementException;
 use Spiral\Sitemaps\Namespaces;
 use Spiral\Sitemaps\Reservation;
+use Spiral\Sitemaps\SitemapsExceptionInterface;
 use Spiral\Sitemaps\Transports\DeflateTransport;
 use Spiral\Sitemaps\Transports\FileTransport;
 use Spiral\Sitemaps\Transports\GZIPTransport;
@@ -66,37 +67,37 @@ class WriterTest extends BaseTest
     {
         try {
             $builder = $this->builder();
-            $builder->start($transport, $filename);
-            try {
-                if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime()))) {
-                    print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
-                } else {
-                    print_r('ELEMENT ADDED' . PHP_EOL);
-                }
 
-                if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
-                    print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
-                } else {
-                    print_r('ELEMENT ADDED' . PHP_EOL);
-                }
+            $builder->start($transport, $filename, [$this->namespaces()->getByAlias('ss')]);
+            if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime()))) {
+                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+            } else {
+                print_r('ELEMENT ADDED' . PHP_EOL);
+            }
 
-                if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
-                    print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
-                } else {
-                    print_r('ELEMENT ADDED' . PHP_EOL);
-                }
-            } catch (EnormousElementException $exception) {
-                print_r('EX:' . $exception->getMessage() . PHP_EOL);
-            } catch (\Throwable $exception) {
-                print_r('EX2:' . $exception->getMessage() . PHP_EOL);
+            if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
+                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+            } else {
+                print_r('ELEMENT ADDED' . PHP_EOL);
+            }
+
+            if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
+                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+            } else {
+                print_r('ELEMENT ADDED' . PHP_EOL);
             }
 
             $builder->end();
+        } catch (SitemapsExceptionInterface $exception) {
+            print_r('EX:' . $exception->getMessage() . PHP_EOL);
+            print_r('EX1:' . get_class($exception) . PHP_EOL);
         } catch (\Throwable $exception) {
-            print_r('EX3:' . $exception->getMessage() . PHP_EOL);
+            print_r('EX2:' . $exception->getMessage() . PHP_EOL);
         }
 
-        print_r(file_get_contents($filename));
+        if (file_exists($filename)) {
+            print_r(file_get_contents($filename));
+        }
     }
 
     public function builderProvider()
@@ -108,6 +109,7 @@ class WriterTest extends BaseTest
     }
 
     /**
+     * @depends testBuilderFile
      * @throws \Exception
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Psr\Container\NotFoundExceptionInterface
@@ -118,42 +120,29 @@ class WriterTest extends BaseTest
         try {
             $builder = $this->sitemapBuilder();
             $builder->start(new FileTransport(new TransportConfig()), $filename);
-            try {
-                if (!$builder->addSitemap(new Elements\Sitemap('http://uri.loc/x1.xml',
-                    (new \DateTimeImmutable())->setTimestamp(filemtime('x1.xml'))))) {
-                    print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
-                } else {
-                    print_r('ELEMENT ADDED' . PHP_EOL);
-                }
+            if (!$builder->addSitemap(new Elements\Sitemap('http://uri.loc/x1.xml',
+                (new \DateTimeImmutable())->setTimestamp(filemtime('x1.xml'))))) {
+                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+            } else {
+                print_r('ELEMENT ADDED' . PHP_EOL);
+            }
 
-                if (!$builder->addSitemap(new Elements\Sitemap('http://uri.loc/x2.xml.gz',
-                    (new \DateTimeImmutable())->setTimestamp(filemtime('x2.xml.gz'))))) {
-                    print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
-                } else {
-                    print_r('ELEMENT ADDED' . PHP_EOL);
-                }
-            } catch (EnormousElementException $exception) {
-                print_r('EX:' . $exception->getMessage() . PHP_EOL);
-            } catch (\Throwable $exception) {
-                print_r('EX2:' . $exception->getMessage() . PHP_EOL);
+            if (!$builder->addSitemap(new Elements\Sitemap('http://uri.loc/x2.xml.gz',
+                (new \DateTimeImmutable())->setTimestamp(filemtime('x2.xml.gz'))))) {
+                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+            } else {
+                print_r('ELEMENT ADDED' . PHP_EOL);
             }
 
             $builder->end();
+        } catch (SitemapsExceptionInterface $exception) {
+            print_r('EX:' . $exception->getMessage() . PHP_EOL);
+//            print_r('EX1:' . get_class($exception) . PHP_EOL);
         } catch (\Throwable $exception) {
-            print_r('EX3:' . $exception->getMessage() . PHP_EOL);
+            print_r('EX2:' . $exception->getMessage() . PHP_EOL);
         }
 
         print_r(file_get_contents($filename));
-    }
-
-    /**
-     * @return \Spiral\Sitemaps\Configurator
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     */
-    private function configurator(): Configurator
-    {
-        return $this->app->container->get(Configurator::class);
     }
 
     /**
@@ -185,305 +174,4 @@ class WriterTest extends BaseTest
     {
         return $this->app->container->get(Namespaces::class);
     }
-
-    /**
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     */
-    public function testFile()
-    {
-        exit;
-        $filename = 'x.xml';
-        $builder = $this->builder();
-        $writer = $this->file();
-        $writer->open($filename);
-//        try {
-//            $writer->openURI($filename);
-//        } catch (\Throwable $e) {
-//            print_r($e->getMessage());
-//            //throw  $e;
-//        }
-        $builder->start($writer);
-//        print_r([$writer->flush(), file_get_contents($filename)]);
-
-        $builder->addURL($writer, new Elements\URL('uri.loc', new \DateTime(), 'weekly', .7));
-//        print_r([$writer->flush(), file_get_contents($filename)]);
-
-//        exit;
-        $builder->addURL($writer, new Elements\URL('uri.loc', new \DateTime(), 'weekly', .7));
-        print_r([file_get_contents($filename), $writer->flush(), file_get_contents($filename)]);
-
-//        $builder->end($writer);
-//        print_r([$writer->flush(), file_get_contents($filename)]);
-//        exit;
-
-//        print_r(file_get_contents($filename));
-    }
-
-    /**
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     */
-    public function testPortion()
-    {
-        exit;
-        $filename = 'x.xml';
-        $builder = $this->builder();
-        $writer = $this->portion();
-        $writer->open($filename);
-        try {
-            $writer->openURI($filename);
-        } catch (\Throwable $e) {
-            print_r($e->getMessage());
-            //throw  $e;
-        }
-        $builder->start($writer);
-        $builder->addURL($writer->writer(), new Elements\URL('uri.loc', new \DateTime(), 'weekly', .7));
-        $builder->end($writer);
-
-        print_r(file_get_contents($filename));
-    }
-
-    /**
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     * @throws \Spiral\Sitemaps\Exceptions\InvalidNamespaceException
-     */
-    public function testInMemory()
-    {
-        exit;
-        $builder = $this->builder();
-        $writer = $this->inMemory();
-        $writer->open();
-        $builder->start($writer,
-            [
-                new Elements\SitemapNamespace('bla', 'bla.loc'),
-                $this->namespaces()->getByAlias('image'),
-                $this->namespaces()->get('bla2', 'http://blabla.loc'),
-                $this->namespaces()->get('xmlns:a2', '//blabla.loc'),
-            ]);
-        $builder->addURL($writer, new Elements\URL('uri.loc', new \DateTime(), 'weekly', .7));
-        $builder->end($writer);
-
-        //print_r($writer->close()->getContent());
-        exit;
-
-//        $writer = $this->inMemory();
-//        $writer->open();
-
-        $writer->startDocument('1.0', 'UTF-8');
-
-        $writer->startElement('urlset');
-        $writer->writeAttribute('xmlns:image', 'http://www.google.com/schemas/sitemap-image/1.1');
-        $writer->writeAttribute('xmlns:xhtml', 'http://www.w3.org/1999/xhtml');
-
-        $writer->writeAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
-
-        /////
-
-        $writer->startElement('url');
-        $writer->writeElement('loc', 'http://page.loc');
-        $writer->writeElement('lastmod', (new \DateTime())->format('c'));
-        $writer->writeElement('changefreq', 'weekly');
-        $writer->writeElement('priority', 0.7);
-
-//        print_r([
-//            $writer->flush(false),
-//            $writer->flush(false),
-//            $writer->flush(true),
-//            $writer->flush(false)
-//        ]);
-
-        $writer->startElement('image:image');
-        $writer->writeElement('image:loc', 'http://image.loc');
-
-        $writer->startElement('image:caption');
-        $writer->writeCData('caption');
-        $writer->endElement(); //image:caption
-
-        $writer->writeElement('image:geo_location', 'geo location');
-
-        $writer->startElement('image:title');
-        $writer->writeCData('title');
-        $writer->endElement(); //image:title
-
-        $writer->writeElement('image:license', 'license');
-
-        $writer->endElement(); //image:image
-
-        $writer->startElement('xhtml:link');
-        $writer->writeAttribute('rel', 'alternate');
-        $writer->writeAttribute('hreflang', 'ru');
-        $writer->writeAttribute('href', 'http://page.ru');
-        $writer->endElement(); //xhtml:link
-
-        $writer->startElement('xhtml:link');
-        $writer->writeAttribute('rel', 'alternate');
-        $writer->writeAttribute('hreflang', 'uk');
-        $writer->writeAttribute('href', 'http://page.uk');
-        $writer->endElement(); //xhtml:link
-
-        $writer->endElement(); //url
-
-        /////
-
-        $writer->endElement(); //urlset
-        $writer->endDocument();
-
-        echo($writer->close());
-    }
-
-//    public function testWriter()
-//    {
-//        echo __METHOD__;
-//        $xml = new \XMLWriter();
-//        $xml->openMemory();
-//        $xml->setIndent(true);
-//        $xml->setIndentString('    ');
-//
-//        $xml->startDocument('1.0', 'UTF-8');
-//
-//        $xml->startElement('urlset');
-//        $xml->writeAttribute('xmlns:image', 'http://www.google.com/schemas/sitemap-image/1.1');
-//        $xml->writeAttribute('xmlns:xhtml', 'http://www.w3.org/1999/xhtml');
-//        $xml->writeAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
-//
-//        $writer = new \Spiral\Sitemaps\Writers\URLWriter(new ImageWriter($xml), new AlterLangWriter($xml), $xml);
-//        $writer->write(new \Spiral\Sitemaps\Items\URL('bla.com'));
-//
-//        $xml->endElement(); //urlset
-//        $xml->endDocument();
-//
-//        $mem = $xml->flush();
-//        print_r([mb_strlen($mem), mb_strlen($mem, '8bit'), $mem]);
-//    }
-
-//    public function testWriter2()
-//    {
-//        $writer = new \XMLWriter();
-//        $writer->openMemory();
-//        $writer->setIndent(true);
-//        $writer->setIndentString('    ');
-//
-//        $writer->startDocument('1.0', 'UTF-8');
-//
-//        $writer->startElement('urlset');
-//        $writer->writeAttribute('xmlns:image', 'http://www.google.com/schemas/sitemap-image/1.1');
-//        $writer->writeAttribute('xmlns:xhtml', 'http://www.w3.org/1999/xhtml');
-//        $writer->writeAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
-//
-//        /////
-//
-//        $writer->startElement('url');
-//        $writer->writeElement('loc', 'http://page.loc');
-//        $writer->writeElement('lastmod', (new \DateTime())->format('c'));
-//        $writer->writeElement('changefreq', 'weekly');
-//        $writer->writeElement('priority', 0.7);
-//
-//        $writer->startElement('image:image');
-//        $writer->writeElement('image:loc', 'http://image.loc');
-//
-//        $writer->startElement('image:caption');
-//        $writer->writeCData('caption');
-//        $writer->endElement(); //image:caption
-//
-//        $writer->writeElement('image:geo_location', 'geo location');
-//
-//        $writer->startElement('image:title');
-//        $writer->writeCData('title');
-//        $writer->endElement(); //image:title
-//
-//        $writer->writeElement('image:license', 'license');
-//
-//        $writer->endElement(); //image:image
-//
-//        $writer->startElement('xhtml:link');
-//        $writer->writeAttribute('rel', 'alternate');
-//        $writer->writeAttribute('hreflang', 'ru');
-//        $writer->writeAttribute('href', 'http://page.ru');
-//        $writer->endElement(); //xhtml:link
-//
-//        $writer->startElement('xhtml:link');
-//        $writer->writeAttribute('rel', 'alternate');
-//        $writer->writeAttribute('hreflang', 'uk');
-//        $writer->writeAttribute('href', 'http://page.uk');
-//        $writer->endElement(); //xhtml:link
-//
-//        $writer->endElement(); //url
-//
-////        $flush = $writer->flush(false);
-////        print_r([$flush, mb_strlen($flush)]);
-//        /////
-//
-//        $writer->endElement(); //urlset
-//        $writer->endDocument();
-//
-//        print_r([mb_strlen($writer->flush(true))]);
-//    }
-
-//    public function testWriter3()
-//    {
-//        $writer = new \XMLWriter();
-//        $writer->openMemory();
-//        $writer->setIndent(true);
-//        $writer->setIndentString('    ');
-//
-//        $writer->startDocument('1.0', 'UTF-8');
-//
-//        $writer->startElement('urlset');
-//        $writer->writeAttribute('xmlns:image', 'http://www.google.com/schemas/sitemap-image/1.1');
-//        $writer->writeAttribute('xmlns:xhtml', 'http://www.w3.org/1999/xhtml');
-//        $writer->writeAttribute('xmlns', 'http://www.sitemaps.org/schemas/sitemap/0.9');
-//
-//        /////
-//
-//        $writer->startElement('url');
-//        $flush = $writer->flush();
-//        print_r([PHP_EOL.$flush, mb_strlen($flush)]);
-//        $writer->writeElement('loc', 'http://page.loc');
-//        $writer->writeElement('lastmod', (new \DateTime())->format('c'));
-//        $writer->writeElement('changefreq', 'weekly');
-//        $writer->writeElement('priority', 0.7);
-//
-//        $writer->startElement('image:image');
-//        $writer->writeElement('image:loc', 'http://image.loc');
-//
-//        $writer->startElement('image:caption');
-//        $writer->writeCData('caption');
-//        $writer->endElement(); //image:caption
-//
-//        $writer->writeElement('image:geo_location', 'geo location');
-//
-//        $writer->startElement('image:title');
-//        $writer->writeCData('title');
-//        $writer->endElement(); //image:title
-//
-//        $writer->writeElement('image:license', 'license');
-//
-//        $writer->endElement(); //image:image
-//
-//        $writer->startElement('xhtml:link');
-//        $writer->writeAttribute('rel', 'alternate');
-//        $writer->writeAttribute('hreflang', 'ru');
-//        $writer->writeAttribute('href', 'http://page.ru');
-//        $writer->endElement(); //xhtml:link
-//
-//        $writer->startElement('xhtml:link');
-//        $writer->writeAttribute('rel', 'alternate');
-//        $writer->writeAttribute('hreflang', 'uk');
-//        $writer->writeAttribute('href', 'http://page.uk');
-//        $writer->endElement(); //xhtml:link
-//
-//        $flush = $writer->flush();
-//        print_r([PHP_EOL.$flush, mb_strlen($flush)]);
-//        $writer->endElement(); //url
-//
-//        /////
-//
-//        $writer->endElement(); //urlset
-//        $writer->endDocument();
-//
-//        $flush = $writer->flush();
-//        print_r([PHP_EOL.$flush, mb_strlen($flush)]);
-//    }
 }
