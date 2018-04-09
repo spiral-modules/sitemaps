@@ -44,46 +44,73 @@ class Image implements ElementInterface
         $this->license = $license;
     }
 
+    /**
+     * @return string
+     */
     public function getLocation(): string
     {
         return $this->loc;
     }
 
+    /**
+     * @return bool
+     */
     public function hasCaption(): bool
     {
         return !empty($this->caption);
     }
 
+    /**
+     * @return string
+     */
     public function getCaption(): string
     {
         return $this->caption;
     }
 
+    /**
+     * @return bool
+     */
     public function hasGeoLocation(): bool
     {
         return !empty($this->geoLocation);
     }
 
+    /**
+     * @return string
+     */
     public function getGeoLocation(): string
     {
         return $this->geoLocation;
     }
 
+    /**
+     * @return bool
+     */
     public function hasTitle(): bool
     {
         return !empty($this->title);
     }
 
+    /**
+     * @return string
+     */
     public function getTitle(): string
     {
         return $this->title;
     }
 
+    /**
+     * @return bool
+     */
     public function hasLicense(): bool
     {
         return !empty($this->license);
     }
 
+    /**
+     * @return string
+     */
     public function getLicense(): string
     {
         return $this->license;

@@ -13,9 +13,13 @@ use Spiral\Sitemaps\Patterns\URLPattern;
 
 class Sitemap extends AbstractBuilder
 {
-    /** @var \Spiral\Sitemaps\Patterns\URLPattern */
+    /** @var URLPattern */
     private $pattern;
 
+    /**
+     * {@inheritdoc}
+     * @param URLPattern $pattern
+     */
     public function __construct(
         Declaration $declaration,
         SitemapValidator $validator,

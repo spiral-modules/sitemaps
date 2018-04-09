@@ -74,6 +74,9 @@ abstract class AbstractBuilder
         $this->transport->open($this->writer);
     }
 
+    /**
+     *
+     */
     public function end()
     {
         if (empty($this->writer)) {

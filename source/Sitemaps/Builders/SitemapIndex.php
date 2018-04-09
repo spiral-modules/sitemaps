@@ -19,6 +19,10 @@ class SitemapIndex extends AbstractBuilder
     /** @var SitemapPattern */
     private $pattern;
 
+    /**
+     * {@inheritdoc}
+     * @param SitemapPattern $pattern
+     */
     public function __construct(
         Declaration $declaration,
         SitemapValidator $validator,

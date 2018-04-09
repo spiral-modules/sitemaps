@@ -72,36 +72,57 @@ class URL implements ElementInterface
         return $this;
     }
 
+    /**
+     * @return string
+     */
     public function getLocation(): string
     {
         return $this->loc;
     }
 
+    /**
+     * @return bool
+     */
     public function hasLastModificationTime(): bool
     {
         return !empty($this->lastmod);
     }
 
+    /**
+     * @return \DateTimeInterface
+     */
     public function getLastModificationTime(): \DateTimeInterface
     {
         return $this->lastmod;
     }
 
+    /**
+     * @return bool
+     */
     public function hasChangeFrequency(): bool
     {
         return !empty($this->changefreq);
     }
 
+    /**
+     * @return string
+     */
     public function getChangeFrequency(): string
     {
         return $this->changefreq;
     }
 
+    /**
+     * @return bool
+     */
     public function hasPriority(): bool
     {
         return !empty($this->priority);
     }
 
+    /**
+     * @return float
+     */
     public function getPriority(): float
     {
         return $this->priority;
