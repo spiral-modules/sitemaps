@@ -2,28 +2,49 @@
 
 namespace Spiral\Sitemaps\Transports;
 
+use Spiral\Sitemaps\Configs\TransportConfig;
 use Spiral\Sitemaps\TransportInterface;
 use Spiral\Sitemaps\Writer;
 
 class FileTransport implements TransportInterface
 {
+    private $config;
+
+    public function __construct(TransportConfig $config)
+    {
+        $this->config = $config;
+    }
+
     public function open(Writer $writer)
     {
-        $this->write($writer);
+        $handler = $this->initHandler($writer);
+        fwrite($handler, $writer->flush());
     }
 
     public function close(Writer $writer)
     {
-        $this->write($writer, FILE_APPEND);
+        $this->append($writer);
+        fclose($writer->getResource());
+
+        $writer->flushResource();
     }
 
     public function append(Writer $writer)
     {
-        $this->write($writer, FILE_APPEND);
+        $handler = $writer->getResource();
+        fwrite($handler, $writer->flush());
     }
 
-    private function write(Writer $writer, $mode = 0)
+    /**
+     * @param Writer $writer
+     *
+     * @return resource
+     */
+    private function initHandler(Writer $writer)
     {
-        file_put_contents($writer->getFilename(), $writer->flush(), $mode);
+        $handler = fopen($writer->getFilename(), $this->config->getMode(static::class));
+        $writer->setResource($handler);
+
+        return $handler;
     }
 }

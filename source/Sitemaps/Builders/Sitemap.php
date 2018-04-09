@@ -5,7 +5,7 @@ namespace Spiral\Sitemaps\Builders;
 use Spiral\Sitemaps\Configs\BuilderConfig;
 use Spiral\Sitemaps\Configurator;
 use Spiral\Sitemaps\Declaration;
-use Spiral\Sitemaps\Elements\URL;
+use Spiral\Sitemaps\Elements;
 use Spiral\Sitemaps\ElementInterface;
 use Spiral\Sitemaps\Reservation;
 use Spiral\Sitemaps\Validators\SitemapValidator;
@@ -30,11 +30,11 @@ class Sitemap extends AbstractBuilder
     }
 
     /**
-     * @param URL $url
+     * @param Elements\URL $url
      *
      * @return bool
      */
-    public function addURL(URL $url)
+    public function addURL(Elements\URL $url)
     {
         return $this->addElement($url);
     }

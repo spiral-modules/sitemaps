@@ -40,12 +40,6 @@ abstract class AbstractBuilder
     /** @var TransportInterface|null */
     protected $transport;
 
-    /** @var Writer\State */
-    protected $state;
-
-    /** @var Writer\Buffer */
-    protected $buffer;
-
     public function __construct(
         Declaration $declaration,
         SitemapValidator $validator,
@@ -71,13 +65,12 @@ abstract class AbstractBuilder
             throw new WorkflowException('XML writer is already opened.');
         }
 
-        $this->state = new Writer\State();
-        $this->buffer = new Writer\Buffer();
         $this->transport = $transport;
 
-        $this->state->reserveFilesize($this->reservation->calculateSize(static::class, $namespaces));
         $this->writer = $this->makeConfiguredWriter($filename, $namespaces);
         $this->writerHelper = $this->makeWriterHelper($namespaces);
+
+        $this->writer->reserveSize($this->reservation->calculateSize(static::class, $namespaces));
 
         $this->transport->open($this->writer);
     }
@@ -91,7 +84,7 @@ abstract class AbstractBuilder
         $this->declaration->finalize($this->writer);
         $this->transport->close($this->writer);
 
-        $this->flushState();
+        $this->flushEntities();
     }
 
     /**
@@ -130,39 +123,41 @@ abstract class AbstractBuilder
     }
 
     /**
-     * @param \Spiral\Sitemaps\ElementInterface $entity
+     * @param \Spiral\Sitemaps\ElementInterface $element
      *
      * @return bool
      */
-    protected function addElement(ElementInterface $entity): bool
+    protected function addElement(ElementInterface $element): bool
     {
-        $size = $this->calcSize($entity);
+        $size = $this->calculateElementSize($element);
 
-        if ($this->validator->isEnormousElement($this->state, $size)) {
+        if ($this->validator->isEnormousElement($this->writer->getState(), $size)) {
             throw new EnormousElementException(Utils::bytes($size));
         }
 
-        if (!$this->validator->validate($this->state, $size)) {
+        if (!$this->validator->validate($this->writer->getState(), $size)) {
             return false;
         }
 
-        $this->write($this->writer, $entity);
-        $this->state->addElement($size);
-        $this->buffer->add($size);
+        $this->write($this->writer, $element);
+        $this->writer->logElement($size);
 
-        $this->flushBufferIfOverflow();
+        if ($this->isBufferOverflown()) {
+            $this->transport->append($this->writer);
+            $this->writer->flushBuffer();
+        }
 
         return true;
     }
 
     /**
-     * @param \Spiral\Sitemaps\ElementInterface $entity
+     * @param \Spiral\Sitemaps\ElementInterface $element
      *
      * @return int
      */
-    private function calcSize(ElementInterface $entity): int
+    private function calculateElementSize(ElementInterface $element): int
     {
-        $this->write($this->writerHelper, $entity);
+        $this->write($this->writerHelper, $element);
         $data = $this->writerHelper->flush();
 
         return Utils::length($data);
@@ -177,31 +172,18 @@ abstract class AbstractBuilder
     abstract protected function write(\XMLWriter $writer, ElementInterface $element);
 
     /**
-     *
-     */
-    private function flushBufferIfOverflow()
-    {
-        if ($this->bufferOverflow()) {
-            $this->transport->append($this->writer);
-            $this->buffer->flush();
-        }
-    }
-
-    /**
      * @return bool
      */
-    protected function bufferOverflow(): bool
+    protected function isBufferOverflown(): bool
     {
-        return $this->buffer->getElements() === $this->config->bufferElements() || $this->buffer->getSize() >= $this->config->bufferSize();
+        return $this->writer->bufferElements() === $this->config->bufferElements() || $this->writer->bufferSize() >= $this->config->bufferSize();
     }
 
     /**
      *
      */
-    protected function flushState()
+    protected function flushEntities()
     {
-        $this->state = null;
-        $this->buffer = null;
         $this->writer = null;
         $this->writerHelper = null;
         $this->transport = null;

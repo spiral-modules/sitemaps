@@ -1,6 +1,8 @@
 <?php
 
-namespace Spiral\Sitemaps;
+namespace Spiral\Sitemaps\Writer;
+
+use Spiral\Sitemaps\Utils;
 
 class File
 {
@@ -52,7 +54,7 @@ class File
     }
 
     /**
-     * @return resource
+     * @return resource resource
      */
     public function getResource()
     {

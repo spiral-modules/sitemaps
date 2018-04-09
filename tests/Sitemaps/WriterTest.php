@@ -12,6 +12,7 @@ namespace Spiral\Tests\Sitemaps;
 use samdark\sitemap\DeflateWriter;
 use Spiral\Sitemaps\Builders\Sitemap;
 use Spiral\Sitemaps\Builders\SitemapIndex;
+use Spiral\Sitemaps\Configs\TransportConfig;
 use Spiral\Sitemaps\Elements;
 use Spiral\Sitemaps\Exceptions\EnormousElementException;
 use Spiral\Sitemaps\Namespaces;
@@ -56,18 +57,18 @@ class WriterTest extends BaseTest
 //    }
 
     /**
+     * @dataProvider builderProvider
      * @throws \Exception
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Psr\Container\NotFoundExceptionInterface
      */
-    public function testBuilder()
+    public function testBuilderFile($transport, $filename)
     {
-        $filename = 'x1.xml';
         try {
             $builder = $this->builder();
-            $builder->start(new FileTransport(), $filename);
+            $builder->start($transport, $filename);
             try {
-                if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
+                if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime()))) {
                     print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
                 } else {
                     print_r('ELEMENT ADDED' . PHP_EOL);
@@ -98,6 +99,14 @@ class WriterTest extends BaseTest
         print_r(file_get_contents($filename));
     }
 
+    public function builderProvider()
+    {
+        return [
+            [new FileTransport(new TransportConfig()), 'x1.xml'],
+            [new GZIPTransport(new TransportConfig()), 'x2.xml'],
+        ];
+    }
+
     /**
      * @throws \Exception
      * @throws \Psr\Container\ContainerExceptionInterface
@@ -108,7 +117,7 @@ class WriterTest extends BaseTest
         $filename = 'index.xml';
         try {
             $builder = $this->sitemapBuilder();
-            $builder->start(new FileTransport(), $filename);
+            $builder->start(new FileTransport(new TransportConfig()), $filename);
             try {
                 if (!$builder->addSitemap(new Elements\Sitemap('http://uri.loc/x1.xml',
                     (new \DateTimeImmutable())->setTimestamp(filemtime('x1.xml'))))) {
@@ -117,8 +126,8 @@ class WriterTest extends BaseTest
                     print_r('ELEMENT ADDED' . PHP_EOL);
                 }
 
-                if (!$builder->addSitemap(new Elements\Sitemap('http://uri.loc/x3.xml',
-                    (new \DateTimeImmutable())->setTimestamp(filemtime('x3.xml'))))) {
+                if (!$builder->addSitemap(new Elements\Sitemap('http://uri.loc/x2.xml.gz',
+                    (new \DateTimeImmutable())->setTimestamp(filemtime('x2.xml.gz'))))) {
                     print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
                 } else {
                     print_r('ELEMENT ADDED' . PHP_EOL);

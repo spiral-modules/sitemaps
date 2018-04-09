@@ -22,7 +22,7 @@ class SitemapValidator
      */
     public function isEnormousElement(State $state, int $size)
     {
-        return $size > $this->config->filesize() - $state->getReservedFilesize();
+        return $size > $this->config->filesize() - $state->getReservedSize();
     }
 
     /**
@@ -56,6 +56,6 @@ class SitemapValidator
      */
     private function filesizeAllowed(State $state, int $size): bool
     {
-        return $size <= ($this->config->filesize() - $state->getReservedFilesize() - $state->getCurrentFilesize());
+        return $size <= ($this->config->filesize() - $state->getReservedSize() - $state->getCurrentSize());
     }
 }

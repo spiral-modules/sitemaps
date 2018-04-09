@@ -2,12 +2,18 @@
 
 namespace Spiral\Sitemaps\Transports;
 
+use Spiral\Sitemaps\Configs\TransportConfig;
 use Spiral\Sitemaps\TransportInterface;
 use Spiral\Sitemaps\Writer;
 
 class GZIPTransport implements TransportInterface
 {
-    private $compression = 9;
+    private $config;
+
+    public function __construct(TransportConfig $config)
+    {
+        $this->config = $config;
+    }
 
     public function open(Writer $writer)
     {
@@ -17,15 +23,16 @@ class GZIPTransport implements TransportInterface
 
     public function close(Writer $writer)
     {
-        $handler = $this->writeAndReturnHandler($writer);
-        gzclose($handler);
+        $this->append($writer);
+        gzclose($writer->getResource());
 
         $writer->flushResource();
     }
 
     public function append(Writer $writer)
     {
-        $this->writeAndReturnHandler($writer);
+        $handler = $writer->getResource();
+        gzwrite($handler, $writer->flush());
     }
 
     /**
@@ -35,29 +42,8 @@ class GZIPTransport implements TransportInterface
      */
     private function initHandler(Writer $writer)
     {
-        $handler = gzopen($writer->getFilename() . '.gz', $this->getMode());
+        $handler = gzopen($writer->getFilename() . '.gz', $this->config->getMode(static::class));
         $writer->setResource($handler);
-
-        return $handler;
-    }
-
-    /**
-     * @return string
-     */
-    private function getMode(): string
-    {
-        return 'wb' . $this->compression;
-    }
-
-    /**
-     * @param Writer $writer
-     *
-     * @return resource
-     */
-    private function writeAndReturnHandler(Writer $writer)
-    {
-        $handler = $writer->getResource();
-        gzwrite($handler, $writer->flush());
 
         return $handler;
     }

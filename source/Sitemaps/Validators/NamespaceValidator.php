@@ -31,6 +31,8 @@ class NamespaceValidator
     }
 
     /**
+     * @link https://en.wikipedia.org/wiki/URL#Syntax
+     *
      * @param string $url
      * @param array  $errors
      */

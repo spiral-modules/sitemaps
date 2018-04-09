@@ -13,7 +13,7 @@ class Buffer
     /**
      * @param int $size
      */
-    public function add(int $size)
+    public function addElement(int $size)
     {
         $this->elements++;
         $this->size += $size;

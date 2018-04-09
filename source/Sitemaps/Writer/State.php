@@ -5,10 +5,10 @@ namespace Spiral\Sitemaps\Writer;
 class State
 {
     /** @var int */
-    private $filesize = 0;
+    private $size = 0;
 
     /** @var int */
-    private $reservedFilesize = 0;
+    private $reservedSize = 0;
 
     /** @var int */
     private $elementsCount = 0;
@@ -24,33 +24,33 @@ class State
     /**
      * @return int
      */
-    public function getCurrentFilesize(): int
+    public function getCurrentSize(): int
     {
-        return $this->filesize;
+        return $this->size;
     }
 
     /**
      * @return int
      */
-    public function getReservedFilesize(): int
+    public function getReservedSize(): int
     {
-        return $this->reservedFilesize;
+        return $this->reservedSize;
     }
 
     /**
-     * @param int $filesize
+     * @param int $size
      */
-    public function addElement(int $filesize)
+    public function addElement(int $size)
     {
         $this->elementsCount++;
-        $this->filesize += $filesize;
+        $this->size += $size;
     }
 
     /**
-     * @param int $filesize
+     * @param int $size
      */
-    public function reserveFilesize(int $filesize)
+    public function reserveSize(int $size)
     {
-        $this->reservedFilesize += $filesize;
+        $this->reservedSize += $size;
     }
 }
