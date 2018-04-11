@@ -6,9 +6,6 @@ use Spiral\Sitemaps\Elements\Image;
 use Spiral\Sitemaps\ElementInterface;
 use Spiral\Sitemaps\PatternInterface;
 
-/**
- * @link https://support.google.com/webmasters/answer/178636
- */
 class ImagePattern implements PatternInterface
 {
     /**

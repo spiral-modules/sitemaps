@@ -4,6 +4,9 @@ namespace Spiral\Sitemaps\Elements;
 
 use Spiral\Sitemaps\ElementInterface;
 
+/**
+ * @link https://support.google.com/webmasters/answer/178636
+ */
 class Image implements ElementInterface
 {
     /** @var string */

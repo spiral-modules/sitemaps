@@ -4,6 +4,9 @@ namespace Spiral\Sitemaps\Elements;
 
 use Spiral\Sitemaps\ElementInterface;
 
+/**
+ * @link https://support.google.com/webmasters/answer/2620865
+ */
 class AlterLang implements ElementInterface
 {
     /** @var string */
@@ -24,11 +27,17 @@ class AlterLang implements ElementInterface
         $this->href = $href;
     }
 
+    /**
+     * @return string
+     */
     public function getLang(): string
     {
         return $this->hreflang;
     }
 
+    /**
+     * @return string
+     */
     public function getLocation(): string
     {
         return $this->href;

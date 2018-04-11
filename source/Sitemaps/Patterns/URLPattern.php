@@ -61,23 +61,15 @@ class URLPattern implements PatternInterface
         }
     }
 
-    protected function writeSubContent(\XMLWriter $writer, $url)
+    protected function writeSubContent(\XMLWriter $writer, URL $url)
     {
         $this->writeImages($writer, $url);
-        $this->writeAlterLangs($writer, $url);
     }
 
     private function writeImages(\XMLWriter $writer, URL $url)
     {
         foreach ($url->getImages() as $image) {
             $this->images->write($writer, $image);
-        }
-    }
-
-    private function writeAlterLangs(\XMLWriter $writer, URL $url)
-    {
-        foreach ($url->getAlterLangs() as $lang) {
-            $this->langs->write($writer, $lang);
         }
     }
 }

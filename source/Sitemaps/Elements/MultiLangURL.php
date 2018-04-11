@@ -4,13 +4,16 @@ namespace Spiral\Sitemaps\Elements;
 
 use Spiral\Sitemaps\ElementInterface;
 
-class URL implements ElementInterface
+class MultiLangURL implements ElementInterface
 {
     /** @var Image[] */
     private $images = [];
 
-    /** @var string */
-    private $loc;
+    /** @var \Spiral\Sitemaps\Elements\AlterLang[] */
+    private $alterLangs = [];
+
+    /** @var array */
+    private $locations;
 
     /** @var \DateTimeInterface|null */
     private $lastmod;
@@ -24,18 +27,22 @@ class URL implements ElementInterface
     /**
      * PageItem constructor.
      *
-     * @param string                  $loc
+     * @param array                   $locations
      * @param \DateTimeInterface|null $lastmod
      * @param string|null             $changefreq
      * @param float|null              $priority
      */
     public function __construct(
-        string $loc,
+        array $locations,
         \DateTimeInterface $lastmod = null,
         string $changefreq = null,
         float $priority = null
     ) {
-        $this->loc = $loc;
+        $this->locations = $locations;
+
+        foreach ($locations as $lang => $location) {
+            $this->alterLangs[] = new AlterLang($lang, $location);
+        }
         $this->lastmod = $lastmod;
         $this->changefreq = strtolower($changefreq);
         $this->priority = $priority;
@@ -56,11 +63,19 @@ class URL implements ElementInterface
     }
 
     /**
-     * @return string
+     * @return \Generator|\Spiral\Sitemaps\Elements\Location[]
      */
-    public function getLocation(): string
+    public function getLocations()
     {
-        return $this->loc;
+        return $this->locations;
+//        foreach ($this->locations as $lang => $location) {
+//            yield new Location($location, $this->locations);
+//        }
+    }
+
+    public function getAlterLangs()
+    {
+        return $this->alterLangs;
     }
 
     /**

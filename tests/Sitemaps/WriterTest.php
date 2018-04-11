@@ -10,6 +10,7 @@ namespace Spiral\Tests\Sitemaps;
 
 
 use samdark\sitemap\DeflateWriter;
+use Spiral\Sitemaps\Builders\MSitemap;
 use Spiral\Sitemaps\Builders\Sitemap;
 use Spiral\Sitemaps\Builders\SitemapIndex;
 use Spiral\Sitemaps\Configs\TransportConfig;
@@ -57,6 +58,34 @@ class WriterTest extends BaseTest
 //        $reserve->calculateSize([$this->namespaces()->getByAlias('image')]);
 //    }
 
+    public function testMulti()
+    {
+        $url = new Elements\MultiLangURL([
+            'ru' => 'http://loc.ru',
+            'en' => 'http://loc.en',
+            'fr' => 'http://loc.fr',
+        ]);
+        $url->addImage(new Elements\Image('http://loc..com/img.png'));
+        $filename = 'alll.xml';
+        try {
+        $builder = $this->container->get(MSitemap::class);
+        $builder->start(new FileTransport(new TransportConfig()), $filename);
+        $builder->addURL($url);
+        $builder->end();} catch (\Throwable $exception) {
+            print_r('EX:' . $exception->getMessage() . ' ['.$exception->getFile().'/'.$exception->getLine().']'.PHP_EOL);
+        }
+        print_r(file_get_contents($filename));
+
+//        foreach ($url->getLocations() as $location) {
+//            print_r(PHP_EOL . '-----' . $location . PHP_EOL);
+//            foreach ($url->getAlterLangs() as $lang) {
+//                print_r([
+//                    $lang->getLang() => $lang->getLocation()
+//                ]);
+//            }
+//        }
+    }
+
     /**
      * @dataProvider builderProvider
      * @throws \Exception
@@ -65,6 +94,7 @@ class WriterTest extends BaseTest
      */
     public function testBuilderFile($transport, $filename)
     {
+        exit;
         try {
             $builder = $this->builder();
 
@@ -116,6 +146,7 @@ class WriterTest extends BaseTest
      */
     public function testSitemapBuilder()
     {
+        exit;
         $filename = 'index.xml';
         try {
             $builder = $this->sitemapBuilder();

@@ -15,6 +15,7 @@ class DeclarationConfig
         'encoding'      => 'UTF-8',
         'root-elements' => [
             Builders\Sitemap::class      => 'urlset',
+            Builders\MSitemap::class      => 'urlset',
             Builders\SitemapIndex::class => 'sitemapindex',
         ]
     ];
