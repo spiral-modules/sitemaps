@@ -47,6 +47,56 @@ class Image implements ElementInterface
         $this->license = $license;
     }
 
+    public function write(\XMLWriter $writer)
+    {
+        $writer->startElement('image:image');
+
+        $this->writeImageLocation($writer);
+        $this->writeImageCaption($writer);
+        $this->writeImageGeoLocation($writer);
+        $this->writeImageTitle($writer);
+        $this->writeImageLicense($writer);
+
+        $writer->endElement();
+    }
+
+    private function writeImageLocation(\XMLWriter $writer)
+    {
+        $writer->writeElement('image:loc', $this->getLocation());
+    }
+
+    private function writeImageCaption(\XMLWriter $writer)
+    {
+        if ($this->hasCaption()) {
+            $writer->startElement('image:caption');
+            $writer->writeCData($this->getCaption());
+            $writer->endElement();
+        }
+    }
+
+    private function writeImageGeoLocation(\XMLWriter $writer)
+    {
+        if ($this->hasGeoLocation()) {
+            $writer->writeElement('image:geo_location', $this->getGeoLocation());
+        }
+    }
+
+    private function writeImageTitle(\XMLWriter $writer)
+    {
+        if ($this->hasTitle()) {
+            $writer->startElement('image:title');
+            $writer->writeCData($this->getTitle());
+            $writer->endElement();
+        }
+    }
+
+    private function writeImageLicense(\XMLWriter $writer)
+    {
+        if ($this->hasLicense()) {
+            $writer->writeElement('image:license', $this->getLicense());
+        }
+    }
+
     /**
      * @return string
      */

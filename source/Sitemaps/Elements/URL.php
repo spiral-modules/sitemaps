@@ -3,8 +3,9 @@
 namespace Spiral\Sitemaps\Elements;
 
 use Spiral\Sitemaps\ElementInterface;
+use Spiral\Sitemaps\SitemapElementInterface;
 
-class URL implements ElementInterface
+class URL implements ElementInterface, SitemapElementInterface
 {
     /** @var Image[] */
     private $images = [];
@@ -39,6 +40,53 @@ class URL implements ElementInterface
         $this->lastmod = $lastmod;
         $this->changefreq = strtolower($changefreq);
         $this->priority = $priority;
+    }
+
+    /**
+     * @param \XMLWriter $writer
+     */
+    public function write(\XMLWriter $writer)
+    {
+        $writer->startElement('url');
+        $this->writeLocation($writer);
+        $this->writeLastModificationTime($writer);
+        $this->writeChangeFrequency($writer);
+        $this->writePriority($writer);
+        $this->writeImages($writer);
+        $writer->endElement();
+    }
+
+    private function writeLocation(\XMLWriter $writer)
+    {
+        $writer->writeElement('loc', $this->getLocation());
+    }
+
+    private function writeLastModificationTime(\XMLWriter $writer)
+    {
+        if ($this->hasLastModificationTime()) {
+            $writer->writeElement('lastmod', $this->getLastModificationTime()->format('c'));
+        }
+    }
+
+    private function writeChangeFrequency(\XMLWriter $writer)
+    {
+        if ($this->hasChangeFrequency()) {
+            $writer->writeElement('changefreq', $this->getChangeFrequency());
+        }
+    }
+
+    private function writePriority(\XMLWriter $writer)
+    {
+        if ($this->hasPriority()) {
+            $writer->writeElement('priority', number_format($this->getPriority(), 1));
+        }
+    }
+
+    private function writeImages(\XMLWriter $writer)
+    {
+        foreach ($this->getImages() as $image) {
+            $image->write($writer);
+        }
     }
 
     /**

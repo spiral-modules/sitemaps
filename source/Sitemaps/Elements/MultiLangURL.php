@@ -4,7 +4,11 @@ namespace Spiral\Sitemaps\Elements;
 
 use Spiral\Sitemaps\ElementInterface;
 
-class MultiLangURL implements ElementInterface
+/*
+ * 1 pass [en: loc.en, ru: loc.ru]
+ * 2 pass image new Image(), optional $lang
+ */
+class MultiLangURL implements ElementInterface, SitemapElementInterface
 {
     /** @var Image[] */
     private $images = [];
@@ -132,5 +136,10 @@ class MultiLangURL implements ElementInterface
     public function getImages(): array
     {
         return $this->images;
+    }
+
+    public function write(\XMLWriter $writer)
+    {
+        // TODO: Implement write() method.
     }
 }

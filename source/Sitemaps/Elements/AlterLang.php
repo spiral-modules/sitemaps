@@ -10,21 +10,32 @@ use Spiral\Sitemaps\ElementInterface;
 class AlterLang implements ElementInterface
 {
     /** @var string */
-    private $hreflang;
+    private $lang;
 
     /** @var string */
-    private $href;
+    private $location;
 
     /**
      * AlterLangItem constructor.
      *
-     * @param string $hreflang
-     * @param string $href
+     * @param string $lang
+     * @param string $location
      */
-    public function __construct(string $hreflang, string $href)
+    public function __construct(string $lang, string $location)
     {
-        $this->hreflang = $hreflang;
-        $this->href = $href;
+        $this->lang = $lang;
+        $this->location = $location;
+    }
+
+    public function write(\XMLWriter $writer)
+    {
+        $writer->startElement('xhtml:link');
+
+        $writer->writeAttribute('rel', 'alternate');
+        $writer->writeAttribute('hreflang', $this->getLang());
+        $writer->writeAttribute('href', $this->getLocation());
+
+        $writer->endElement();
     }
 
     /**
@@ -32,7 +43,7 @@ class AlterLang implements ElementInterface
      */
     public function getLang(): string
     {
-        return $this->hreflang;
+        return $this->lang;
     }
 
     /**
@@ -40,6 +51,6 @@ class AlterLang implements ElementInterface
      */
     public function getLocation(): string
     {
-        return $this->href;
+        return $this->location;
     }
 }
