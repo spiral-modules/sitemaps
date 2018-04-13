@@ -5,6 +5,9 @@ namespace Spiral\Sitemaps\Elements;
 use Spiral\Sitemaps\ElementInterface;
 use Spiral\Sitemaps\SitemapElementInterface;
 
+/**
+ * @link https://support.google.com/webmasters/answer/75712
+ */
 class Sitemap implements ElementInterface, SitemapElementInterface
 {
     /** @var string */

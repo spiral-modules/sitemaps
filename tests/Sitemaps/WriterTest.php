@@ -66,69 +66,21 @@ class WriterTest extends BaseTest
             'fr' => 'http://loc.fr',
         ]);
         $url->addImage(new Elements\Image('http://loc..com/img.png'));
+        $url->addImage(new Elements\Image('http://loc..ru/img.png'), 'ru');
+        $url->addImage(new Elements\Image('http://loc..en/img.png'), 'en');
         $filename = 'alll.xml';
         try {
-        $builder = $this->container->get(MSitemap::class);
-        $builder->start(new FileTransport(new TransportConfig()), $filename);
-        $builder->addURL($url);
-        $builder->end();} catch (\Throwable $exception) {
-            print_r('EX:' . $exception->getMessage() . ' ['.$exception->getFile().'/'.$exception->getLine().']'.PHP_EOL);
+            /** @var MSitemap $builder */
+            $builder = $this->container->get(MSitemap::class);
+            $builder->start(new FileTransport(new TransportConfig()), $filename,[$this->namespaces()->getByAlias('lang'),$this->namespaces()->getByAlias('image')]);
+            $builder->addURL($url);
+            $builder->end();
+        } catch (\Throwable $exception) {
+            print_r('EX:' . $exception->getMessage() . ' [' . $exception->getFile() . '/' . $exception->getLine() . ']' . PHP_EOL);
         }
         print_r(file_get_contents($filename));
-
-//        foreach ($url->getLocations() as $location) {
-//            print_r(PHP_EOL . '-----' . $location . PHP_EOL);
-//            foreach ($url->getAlterLangs() as $lang) {
-//                print_r([
-//                    $lang->getLang() => $lang->getLocation()
-//                ]);
-//            }
-//        }
     }
 
-    /**
-     * @dataProvider builderProvider
-     * @throws \Exception
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
-     */
-    public function testBuilderFile($transport, $filename)
-    {
-        exit;
-        try {
-            $builder = $this->builder();
-
-            $builder->start($transport, $filename, [$this->namespaces()->getByAlias('ss')]);
-            if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime()))) {
-                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
-            } else {
-                print_r('ELEMENT ADDED' . PHP_EOL);
-            }
-
-            if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
-                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
-            } else {
-                print_r('ELEMENT ADDED' . PHP_EOL);
-            }
-
-            if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
-                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
-            } else {
-                print_r('ELEMENT ADDED' . PHP_EOL);
-            }
-
-            $builder->end();
-        } catch (SitemapsExceptionInterface $exception) {
-            print_r('EX:' . $exception->getMessage() . PHP_EOL);
-            print_r('EX1:' . get_class($exception) . PHP_EOL);
-        } catch (\Throwable $exception) {
-            print_r('EX2:' . $exception->getMessage() . PHP_EOL);
-        }
-
-        if (file_exists($filename)) {
-            print_r(file_get_contents($filename));
-        }
-    }
 
     public function builderProvider()
     {
@@ -139,42 +91,84 @@ class WriterTest extends BaseTest
     }
 
     /**
-     * @depends testBuilderFile
+     * @dataProvider builderProvider
      * @throws \Exception
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Psr\Container\NotFoundExceptionInterface
      */
-    public function testSitemapBuilder()
-    {
-        exit;
-        $filename = 'index.xml';
-        try {
-            $builder = $this->sitemapBuilder();
-            $builder->start(new FileTransport(new TransportConfig()), $filename);
-            if (!$builder->addSitemap(new Elements\Sitemap('http://uri.loc/x1.xml',
-                (new \DateTimeImmutable())->setTimestamp(filemtime('x1.xml'))))) {
-                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
-            } else {
-                print_r('ELEMENT ADDED' . PHP_EOL);
-            }
-
-            if (!$builder->addSitemap(new Elements\Sitemap('http://uri.loc/x2.xml.gz',
-                (new \DateTimeImmutable())->setTimestamp(filemtime('x2.xml.gz'))))) {
-                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
-            } else {
-                print_r('ELEMENT ADDED' . PHP_EOL);
-            }
-
-            $builder->end();
-        } catch (SitemapsExceptionInterface $exception) {
-            print_r('EX:' . $exception->getMessage() . PHP_EOL);
+//    public function testBuilderFile($transport, $filename)
+//    {
+//        try {
+//            $builder = $this->builder();
+//
+//            $builder->start($transport, $filename);
+//            if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime()))) {
+//                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+//            } else {
+//                print_r('ELEMENT ADDED' . PHP_EOL);
+//            }
+//
+//            if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
+//                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+//            } else {
+//                print_r('ELEMENT ADDED' . PHP_EOL);
+//            }
+//
+//            if (!$builder->addURL(new Elements\URL('http://uri.loc', new \DateTime(), 'weekly', .7))) {
+//                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+//            } else {
+//                print_r('ELEMENT ADDED' . PHP_EOL);
+//            }
+//
+//            $builder->end();
+//        } catch (SitemapsExceptionInterface $exception) {
+//            print_r('EX:' . $exception->getMessage() . PHP_EOL);
 //            print_r('EX1:' . get_class($exception) . PHP_EOL);
-        } catch (\Throwable $exception) {
-            print_r('EX2:' . $exception->getMessage() . PHP_EOL);
-        }
+//        } catch (\Throwable $exception) {
+//            print_r('EX2:' . $exception->getMessage() . PHP_EOL);
+//        }
+//
+//        if (file_exists($filename)) {
+//            print_r(file_get_contents($filename));
+//        }
+//        print_r(__METHOD__ . PHP_EOL);
+//    }
 
-        print_r(file_get_contents($filename));
-    }
+    /**
+     * @throws \Exception
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+//    public function testSitemapBuilder()
+//    {
+//        $filename = 'index.xml';
+//        try {
+//            $builder = $this->sitemapBuilder();
+//            $builder->start(new FileTransport(new TransportConfig()), $filename);
+//            if (!$builder->addSitemap(new Elements\Sitemap('http://uri.loc/x1.xml',
+//                (new \DateTimeImmutable())->setTimestamp(filemtime('x1.xml'))))) {
+//                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+//            } else {
+//                print_r('ELEMENT ADDED' . PHP_EOL);
+//            }
+////
+////            if (!$builder->addSitemap(new Elements\Sitemap('http://uri.loc/x2.xml.gz',
+////                (new \DateTimeImmutable())->setTimestamp(filemtime('x2.xml.gz'))))) {
+////                print_r('ELEMENT TOO BIG, MAKE NEW FILE' . PHP_EOL);
+////            } else {
+////                print_r('ELEMENT ADDED' . PHP_EOL);
+////            }
+//
+//            $builder->end();
+//        } catch (SitemapsExceptionInterface $exception) {
+//            print_r('EX:' . $exception->getMessage() . PHP_EOL);
+//        } catch (\Throwable $exception) {
+//            print_r('EX2:' . $exception->getMessage() . PHP_EOL);
+//        }
+//
+//        print_r(file_get_contents($filename));
+//        print_r(__METHOD__ . PHP_EOL);
+//    }
 
     /**
      * @return \Spiral\Sitemaps\Builders\Sitemap

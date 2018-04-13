@@ -58,10 +58,14 @@ abstract class AbstractBuilder
      * @param string             $filename
      * @param array              $namespaces
      */
-    public function start(TransportInterface $transport, string $filename, array $namespaces = [])
+    public function start(TransportInterface $transport, string $filename, $namespaces = [])
     {
         if (!empty($this->writer)) {
             throw new Exceptions\LogicException('XML writer has already been opened.');
+        }
+
+        if (!is_array($namespaces)) {
+            $namespaces = [$namespaces];
         }
 
         $this->transport = $transport;
@@ -168,10 +172,11 @@ abstract class AbstractBuilder
     /**
      * @param \XMLWriter       $writer
      * @param ElementInterface $element
-     *
-     * @return mixed
      */
-    abstract protected function write(\XMLWriter $writer, ElementInterface $element);
+    protected function write(\XMLWriter $writer, ElementInterface $element)
+    {
+        $element->write($writer);
+    }
 
     /**
      * @return bool

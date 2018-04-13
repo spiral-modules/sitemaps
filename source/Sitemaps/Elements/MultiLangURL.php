@@ -8,9 +8,10 @@ use Spiral\Sitemaps\ElementInterface;
  * 1 pass [en: loc.en, ru: loc.ru]
  * 2 pass image new Image(), optional $lang
  */
+
 class MultiLangURL implements ElementInterface, SitemapElementInterface
 {
-    /** @var Image[] */
+    /** @var array */
     private $images = [];
 
     /** @var \Spiral\Sitemaps\Elements\AlterLang[] */
@@ -28,6 +29,8 @@ class MultiLangURL implements ElementInterface, SitemapElementInterface
     /** @var float|null */
     private $priority;
 
+    const DEFAULT_IMAGE_LANG = null;
+
     /**
      * PageItem constructor.
      *
@@ -43,25 +46,26 @@ class MultiLangURL implements ElementInterface, SitemapElementInterface
         float $priority = null
     ) {
         $this->locations = $locations;
+        $this->lastmod = $lastmod;
+        $this->changefreq = strtolower($changefreq);
+        $this->priority = $priority;
 
         foreach ($locations as $lang => $location) {
             $this->alterLangs[] = new AlterLang($lang, $location);
         }
-        $this->lastmod = $lastmod;
-        $this->changefreq = strtolower($changefreq);
-        $this->priority = $priority;
     }
 
     /**
      * Add image item.
      *
-     * @param Image $image
+     * @param Image       $image
+     * @param string|null $lang
      *
      * @return $this
      */
-    public function addImage(Image $image)
+    public function addImage(Image $image, string $lang = self::DEFAULT_IMAGE_LANG)
     {
-        $this->images[] = $image;
+        $this->images[$lang][] = $image;
 
         return $this;
     }
@@ -72,9 +76,6 @@ class MultiLangURL implements ElementInterface, SitemapElementInterface
     public function getLocations()
     {
         return $this->locations;
-//        foreach ($this->locations as $lang => $location) {
-//            yield new Location($location, $this->locations);
-//        }
     }
 
     public function getAlterLangs()
@@ -131,15 +132,71 @@ class MultiLangURL implements ElementInterface, SitemapElementInterface
     }
 
     /**
+     * @param string $lang
+     *
      * @return array|Image[]
      */
-    public function getImages(): array
+    public function getImages(string $lang): array
     {
-        return $this->images;
+        return array_merge($this->defaultImages(),$this->langImages($lang));
+    }
+
+    private function defaultImages()
+    {
+        return $this->images[self::DEFAULT_IMAGE_LANG];
+    }
+
+    private function langImages(string $lang)
+    {
+        return $this->images[$lang] ?? [];
     }
 
     public function write(\XMLWriter $writer)
     {
-        // TODO: Implement write() method.
+        foreach ($this->getLocations() as $lang => $location) {
+            $writer->startElement('url');
+            $writer->writeElement('loc', $location);
+            $this->writeLastModificationTime($writer);
+            $this->writeChangeFrequency($writer);
+            $this->writePriority($writer);
+            $this->writeImages($writer, $lang);
+            $this->writeAlterLangs($writer);
+            $writer->endElement();
+        }
+    }
+
+    private function writeLastModificationTime(\XMLWriter $writer)
+    {
+        if ($this->hasLastModificationTime()) {
+            $writer->writeElement('lastmod', $this->getLastModificationTime()->format('c'));
+        }
+    }
+
+    private function writeChangeFrequency(\XMLWriter $writer)
+    {
+        if ($this->hasChangeFrequency()) {
+            $writer->writeElement('changefreq', $this->getChangeFrequency());
+        }
+    }
+
+    private function writePriority(\XMLWriter $writer)
+    {
+        if ($this->hasPriority()) {
+            $writer->writeElement('priority', number_format($this->getPriority(), 1));
+        }
+    }
+
+    private function writeImages(\XMLWriter $writer, string $lang)
+    {
+        foreach ($this->getImages($lang) as $image) {
+            $image->write($writer);
+        }
+    }
+
+    private function writeAlterLangs(\XMLWriter $writer)
+    {
+        foreach ($this->getAlterLangs() as $lang) {
+            $lang->write($writer);
+        }
     }
 }
